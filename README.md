@@ -1,15 +1,17 @@
 # Elkarbackup
 
-[![Test](https://github.com/elkarbackup/elkarbackup/actions/workflows/run-tests.yml/badge.svg)](https://github.com/elkarbackup/elkarbackup/actions/workflows/run-tests.yml)
-[![Docker images](https://github.com/elkarbackup/elkarbackup/actions/workflows/publish-docker-images.yml/badge.svg)](https://github.com/elkarbackup/elkarbackup/actions/workflows/publish-docker-images.yml)
+[![Test](https://github.com/fschmaeche/elkarbackup/actions/workflows/run-tests.yml/badge.svg)](https://github.com/fschmaeche/elkarbackup/actions/workflows/run-tests.yml)
+[![Docker images](https://github.com/fschmaeche/elkarbackup/actions/workflows/publish-docker-images.yml/badge.svg)](https://github.com/fschmaeche/elkarbackup/actions/workflows/publish-docker-images.yml)
 
 ## What is it?
+
 ElkarBackup is a free open-source backup solution based on RSync/RSnapshot
 
-<img src="http://elkarbackup.org/images/screenshots/eb-login.png" />
-<img src="http://elkarbackup.org/images/screenshots/eb-jobs.png" />
+<img src="http://elkarbackup.org/images/screenshots/eb-login.png"  alt=""/>
+<img src="http://elkarbackup.org/images/screenshots/eb-jobs.png"  alt=""/>
 
 ## Features
+
 - Centralized backups
 - Easy-to-use web interface
 - Backup Linux/Windows clients
@@ -18,12 +20,7 @@ ElkarBackup is a free open-source backup solution based on RSync/RSnapshot
 - Multilanguage (English, Basque, Spanish, German, French)
 
 ## Documentation
+
 * [User Guide](http://docs.elkarbackup.org/)
-* [FAQ](https://github.com/elkarbackup/elkarbackup/wiki/FAQ)
-
-Do you need more?
-
-## Mailing list
-
-Elkarbackup users can subscribe to our [mailing list](https://groups.google.com/forum/?hl=es#!forum/elkarbackup-users) to receive notifications about new versions or make any question.
+* [FAQ](https://github.com/fschmaeche/elkarbackup/wiki/FAQ)
 

@@ -1,20 +1,21 @@
 <?php
+
 namespace App\Api\Dto;
 
 class ScriptOutput
 {
-    private $description;
-    private $id;
-    private $isClientPost;
-    private $isClientPre;
-    private $isJobPost;
-    private $isJobPre;
-    private $name;
+    private string $description;
+    private int $id;
+    private bool $isClientPost;
+    private bool $isClientPre;
+    private bool $isJobPost;
+    private bool $isJobPre;
+    private string $name;
 
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -22,7 +23,7 @@ class ScriptOutput
     /**
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -30,7 +31,7 @@ class ScriptOutput
     /**
      * @return boolean
      */
-    public function getIsClientPost()
+    public function getIsClientPost(): bool
     {
         return $this->isClientPost;
     }
@@ -38,7 +39,7 @@ class ScriptOutput
     /**
      * @return boolean
      */
-    public function getIsClientPre()
+    public function getIsClientPre(): bool
     {
         return $this->isClientPre;
     }
@@ -46,7 +47,7 @@ class ScriptOutput
     /**
      * @return boolean
      */
-    public function getIsJobPost()
+    public function getIsJobPost(): bool
     {
         return $this->isJobPost;
     }
@@ -54,15 +55,15 @@ class ScriptOutput
     /**
      * @return boolean
      */
-    public function getIsJobPre()
+    public function getIsJobPre(): bool
     {
         return $this->isJobPre;
     }
 
     /**
-     * @return boolean
+     * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -70,7 +71,7 @@ class ScriptOutput
     /**
      * @param boolean $description
      */
-    public function setDescription($description)
+    public function setDescription(bool $description): void
     {
         $this->description = $description;
     }
@@ -78,7 +79,7 @@ class ScriptOutput
     /**
      * @param integer $id
      */
-    public function setId($id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -86,7 +87,7 @@ class ScriptOutput
     /**
      * @param boolean $isClientPost
      */
-    public function setIsClientPost($isClientPost)
+    public function setIsClientPost(bool $isClientPost): void
     {
         $this->isClientPost = $isClientPost;
     }
@@ -94,7 +95,7 @@ class ScriptOutput
     /**
      * @param boolean $isClientPre
      */
-    public function setIsClientPre($isClientPre)
+    public function setIsClientPre(bool $isClientPre): void
     {
         $this->isClientPre = $isClientPre;
     }
@@ -102,7 +103,7 @@ class ScriptOutput
     /**
      * @param boolean $isJobPost
      */
-    public function setIsJobPost($isJobPost)
+    public function setIsJobPost(bool $isJobPost): void
     {
         $this->isJobPost = $isJobPost;
     }
@@ -110,7 +111,7 @@ class ScriptOutput
     /**
      * @param boolean $isJobPre
      */
-    public function setIsJobPre($isJobPre)
+    public function setIsJobPre(bool $isJobPre): void
     {
         $this->isJobPre = $isJobPre;
     }
@@ -118,7 +119,7 @@ class ScriptOutput
     /**
      * @param string $name
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }

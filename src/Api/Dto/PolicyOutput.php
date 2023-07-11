@@ -1,16 +1,17 @@
 <?php
+
 namespace App\Api\Dto;
 
 class PolicyOutput
 {
-    private $description;
-    private $id;
-    private $name;
+    private string $description;
+    private int $id;
+    private string $name;
 
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -18,7 +19,7 @@ class PolicyOutput
     /**
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -26,7 +27,7 @@ class PolicyOutput
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -34,7 +35,7 @@ class PolicyOutput
     /**
      * @param string $description
      */
-    public function setDescription($description)
+    public function setDescription(string $description): void
     {
         $this->description = $description;
     }
@@ -42,7 +43,7 @@ class PolicyOutput
     /**
      * @param string $name
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }

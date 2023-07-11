@@ -1,39 +1,40 @@
 <?php
+
 namespace App\Api\Dto;
 
 class JobOutput
 {
-    private $backupLocation;
-    private $client;
-    private $description;
-    private $diskUsage = 0;
-    private $exclude;
-    private $id;
-    private $include;
-    private $isActive = true;
-    private $minNotificationLevel;
-    private $name;
-    private $notificationsEmail;
-    private $notificationsTo = '["owner"]';
-    private $path;
-    private $policy;
-    private $postScripts;
-    private $preScripts;
-    private $token = null;
-    private $useLocalPermissions = true;
+    private int $backupLocation;
+    private int $client;
+    private string $description;
+    private int $diskUsage = 0;
+    private string $exclude;
+    private int $id;
+    private string $include;
+    private bool $isActive = true;
+    private int $minNotificationLevel;
+    private string $name;
+    private string $notificationsEmail;
+    private array $notificationsTo = ["owner"];
+    private string $path;
+    private int $policy;
+    private array $postScripts;
+    private array $preScripts;
+    private ?string $token = null;
+    private bool $useLocalPermissions = true;
 
     /**
-     * @return integer
+     * @return int
      */
-    public function getBackupLocation()
+    public function getBackupLocation(): int
     {
         return $this->backupLocation;
     }
 
     /**
-     * @return integer
+     * @return int
      */
-    public function getClient()
+    public function getClient(): int
     {
         return $this->client;
     }
@@ -41,15 +42,15 @@ class JobOutput
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
 
     /**
-     * @return integer
+     * @return int
      */
-    public function getDiskUsage()
+    public function getDiskUsage(): int
     {
         return $this->diskUsage;
     }
@@ -57,15 +58,15 @@ class JobOutput
     /**
      * @return string
      */
-    public function getExclude()
+    public function getExclude(): string
     {
         return $this->exclude;
     }
 
     /**
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -73,7 +74,7 @@ class JobOutput
     /**
      * @return string
      */
-    public function getInclude()
+    public function getInclude(): string
     {
         return $this->include;
     }
@@ -81,15 +82,15 @@ class JobOutput
     /**
      * @return boolean
      */
-    public function getIsActive()
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }
 
     /**
-     * @return integer
+     * @return int
      */
-    public function getMinNotificationLevel()
+    public function getMinNotificationLevel(): int
     {
         return $this->minNotificationLevel;
     }
@@ -97,7 +98,7 @@ class JobOutput
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -105,15 +106,15 @@ class JobOutput
     /**
      * @return string
      */
-    public function getNotificationsEmail()
+    public function getNotificationsEmail(): string
     {
         return $this->notificationsEmail;
     }
 
     /**
-     * @return array
+     * @return array|string
      */
-    public function getNotificationsTo()
+    public function getNotificationsTo(): array|string
     {
         return $this->notificationsTo;
     }
@@ -121,15 +122,15 @@ class JobOutput
     /**
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
 
     /**
-     * @return integer
+     * @return int
      */
-    public function getPolicy()
+    public function getPolicy(): int
     {
         return $this->policy;
     }
@@ -137,7 +138,7 @@ class JobOutput
     /**
      * @return array
      */
-    public function getPostScripts()
+    public function getPostScripts(): array
     {
         return $this->postScripts;
     }
@@ -145,7 +146,7 @@ class JobOutput
     /**
      * @return array
      */
-    public function getPreScripts()
+    public function getPreScripts(): array
     {
         return $this->preScripts;
     }
@@ -153,7 +154,7 @@ class JobOutput
     /**
      * @return string
      */
-    public function getToken()
+    public function getToken(): ?string
     {
         return $this->token;
     }
@@ -161,23 +162,23 @@ class JobOutput
     /**
      * @return boolean
      */
-    public function getUseLocalPermissions()
+    public function getUseLocalPermissions(): bool
     {
         return $this->useLocalPermissions;
     }
 
     /**
-     * @param integer $backupLocation
+     * @param int $backupLocation
      */
-    public function setBackupLocation($backupLocation)
+    public function setBackupLocation(int $backupLocation): void
     {
         $this->backupLocation = $backupLocation;
     }
 
     /**
-     * @param integer $client
+     * @param int $client
      */
-    public function setClient($client)
+    public function setClient(int $client): void
     {
         $this->client = $client;
     }
@@ -185,15 +186,15 @@ class JobOutput
     /**
      * @param string $description
      */
-    public function setDescription($description)
+    public function setDescription(string $description): void
     {
         $this->description = $description;
     }
 
     /**
-     * @param integer $diskUsage
+     * @param int $diskUsage
      */
-    public function setDiskUsage($diskUsage)
+    public function setDiskUsage(int $diskUsage): void
     {
         $this->diskUsage = $diskUsage;
     }
@@ -201,15 +202,15 @@ class JobOutput
     /**
      * @param string $exclude
      */
-    public function setExclude($exclude)
+    public function setExclude(string $exclude): void
     {
         $this->exclude = $exclude;
     }
 
     /**
-     * @param integer $id
+     * @param int $id
      */
-    public function setId($id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -217,7 +218,7 @@ class JobOutput
     /**
      * @param string $include
      */
-    public function setInclude($include)
+    public function setInclude(string $include): void
     {
         $this->include = $include;
     }
@@ -225,15 +226,15 @@ class JobOutput
     /**
      * @param boolean $isActive
      */
-    public function setIsActive($isActive)
+    public function setIsActive(bool $isActive): void
     {
         $this->isActive = $isActive;
     }
 
     /**
-     * @param integer $minNotificationLevel
+     * @param int $minNotificationLevel
      */
-    public function setMinNotificationLevel($minNotificationLevel)
+    public function setMinNotificationLevel(int $minNotificationLevel): void
     {
         $this->minNotificationLevel = $minNotificationLevel;
     }
@@ -241,7 +242,7 @@ class JobOutput
     /**
      * @param string $name
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -249,7 +250,7 @@ class JobOutput
     /**
      * @param string $notificationsEmail
      */
-    public function setNotificationsEmail($notificationsEmail)
+    public function setNotificationsEmail(string $notificationsEmail): void
     {
         $this->notificationsEmail = $notificationsEmail;
     }
@@ -257,7 +258,7 @@ class JobOutput
     /**
      * @param array $notificationsTo
      */
-    public function setNotificationsTo($notificationsTo)
+    public function setNotificationsTo(array $notificationsTo): void
     {
         $this->notificationsTo = $notificationsTo;
     }
@@ -265,15 +266,15 @@ class JobOutput
     /**
      * @param string $path
      */
-    public function setPath($path)
+    public function setPath(string $path): void
     {
         $this->path = $path;
     }
 
     /**
-     * @param integer $policy
+     * @param int $policy
      */
-    public function setPolicy($policy)
+    public function setPolicy(int $policy): void
     {
         $this->policy = $policy;
     }
@@ -281,7 +282,7 @@ class JobOutput
     /**
      * @param array $postScripts
      */
-    public function setPostScripts($postScripts)
+    public function setPostScripts(array $postScripts): void
     {
         $this->postScripts = $postScripts;
     }
@@ -289,7 +290,7 @@ class JobOutput
     /**
      * @param array $preScripts
      */
-    public function setPreScripts($preScripts)
+    public function setPreScripts(array $preScripts): void
     {
         $this->preScripts = $preScripts;
     }
@@ -297,7 +298,7 @@ class JobOutput
     /**
      * @param string $token
      */
-    public function setToken($token)
+    public function setToken(string $token): void
     {
         $this->token = $token;
     }
@@ -305,7 +306,7 @@ class JobOutput
     /**
      * @param boolean $useLocalPermissions
      */
-    public function setUseLocalPermissions($useLocalPermissions)
+    public function setUseLocalPermissions(bool $useLocalPermissions): void
     {
         $this->useLocalPermissions = $useLocalPermissions;
     }

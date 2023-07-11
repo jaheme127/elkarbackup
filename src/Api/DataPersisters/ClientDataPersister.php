@@ -1,14 +1,6 @@
 <?php
 namespace App\Api\DataPersisters;
 
-use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
-use ApiPlatform\Core\Exception\InvalidArgumentException;
-use App\Entity\Client;
-use App\Exception\APIException;
-use App\Exception\PermissionException;
-use App\Service\ClientService;
-use \Exception;
-
 class ClientDataPersister implements ContextAwareDataPersisterInterface
 {
     private $clientService;

@@ -1,41 +1,43 @@
 <?php
+
 namespace App\Api\Dto;
 
 class JobInput
 {
-    private $backupLocation = 1;
-    private $client;
-    private $description;
-    private $exclude;
-    private $id;
-    private $include;
-    private $isActive = true;
-    private $minNotificationLevel = 400;
-    private $name;
-    private $notificationsEmail;
-    private $notificationsTo = ["owner"];
-    private $path;
-    private $policy = 1;
-    private $postScripts = [];
-    private $preScripts = [];
-    private $token = null;
-    private $useLocalPermissions = true;
+    private int $backupLocation = 1;
+    private int $client;
+    private ?string $description;
+    private ?string $exclude;
+    private int $id;
+    private ?string $include;
+    private bool $isActive = true;
+    private int $minNotificationLevel = 400;
+    private string $name;
+    private ?string $notificationsEmail;
+    private array $notificationsTo = ["owner"];
+    private string $path;
+    private int $policy = 1;
+    private array $postScripts = [];
+    private array $preScripts = [];
+    private ?string $token = null;
+    private bool $useLocalPermissions = true;
+
     /**
-     * @return integer
+     * @return int
      */
     public function getBackupLocation(): int
     {
         return $this->backupLocation;
     }
-    
+
     /**
-     * @return integer
+     * @return int
      */
     public function getClient(): int
     {
         return $this->client;
     }
-    
+
     /**
      * @return string|null
      */
@@ -43,7 +45,7 @@ class JobInput
     {
         return $this->description;
     }
-    
+
     /**
      * @return string|null
      */
@@ -51,15 +53,15 @@ class JobInput
     {
         return $this->exclude;
     }
-    
+
     /**
-     * @return integer
+     * @return int
      */
     public function getId(): int
     {
         return $this->id;
     }
-    
+
     /**
      * @return string|null
      */
@@ -67,7 +69,7 @@ class JobInput
     {
         return $this->include;
     }
-    
+
     /**
      * @return boolean
      */
@@ -75,15 +77,15 @@ class JobInput
     {
         return $this->isActive;
     }
-    
+
     /**
-     * @return integer
+     * @return int
      */
     public function getMinNotificationLevel(): int
     {
         return $this->minNotificationLevel;
     }
-    
+
     /**
      * @return string
      */
@@ -91,7 +93,7 @@ class JobInput
     {
         return $this->name;
     }
-    
+
     /**
      * @return string|null
      */
@@ -99,7 +101,7 @@ class JobInput
     {
         return $this->notificationsEmail;
     }
-    
+
     /**
      * @return array
      */
@@ -107,7 +109,7 @@ class JobInput
     {
         return $this->notificationsTo;
     }
-    
+
     /**
      * @return string
      */
@@ -115,15 +117,15 @@ class JobInput
     {
         return $this->path;
     }
-    
+
     /**
-     * @return integer
+     * @return int
      */
     public function getPolicy(): int
     {
         return $this->policy;
     }
-    
+
     /**
      * @return array|null
      */
@@ -131,7 +133,7 @@ class JobInput
     {
         return $this->postScripts;
     }
-    
+
     /**
      * @return array|null
      */
@@ -139,7 +141,7 @@ class JobInput
     {
         return $this->preScripts;
     }
-    
+
     /**
      * @return string|null
      */
@@ -147,7 +149,7 @@ class JobInput
     {
         return $this->token;
     }
-    
+
     /**
      * @return boolean
      */
@@ -155,23 +157,23 @@ class JobInput
     {
         return $this->useLocalPermissions;
     }
-    
+
     /**
-     * @param integer $backupLocation
+     * @param int $backupLocation
      */
     public function setBackupLocation(int $backupLocation): void
     {
         $this->backupLocation = $backupLocation;
     }
-    
+
     /**
-     * @param integer $client
+     * @param int $client
      */
     public function setClient(int $client): void
     {
         $this->client = $client;
     }
-    
+
     /**
      * @param string|null $description
      */
@@ -179,7 +181,7 @@ class JobInput
     {
         $this->description = $description;
     }
-    
+
     /**
      * @param string|null $exclude
      */
@@ -187,7 +189,7 @@ class JobInput
     {
         $this->exclude = $exclude;
     }
-    
+
     /**
      * @param string|null $include
      */
@@ -195,7 +197,7 @@ class JobInput
     {
         $this->include = $include;
     }
-    
+
     /**
      * @param boolean $isActive
      */
@@ -203,23 +205,23 @@ class JobInput
     {
         $this->isActive = $isActive;
     }
-    
+
     /**
-     * @param integer $minNotificationLevel
+     * @param int $minNotificationLevel
      */
     public function setMinNotificationLevel(int $minNotificationLevel): void
     {
         $this->minNotificationLevel = $minNotificationLevel;
     }
-    
+
     /**
      * @param string $name
      */
-    public function setName(string $name):void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
-    
+
     /**
      * @param string|null $notificationsEmail
      */
@@ -227,15 +229,15 @@ class JobInput
     {
         $this->notificationsEmail = $notificationsEmail;
     }
-    
+
     /**
-     * @param array  $notificationsTo
+     * @param array $notificationsTo
      */
     public function setNotificationsTo(array $notificationsTo): void
     {
         $this->notificationsTo = $notificationsTo;
     }
-    
+
     /**
      * @param string $path
      */
@@ -243,31 +245,31 @@ class JobInput
     {
         $this->path = $path;
     }
-    
+
     /**
-     * @param integer $policy
+     * @param int $policy
      */
     public function setPolicy(int $policy): void
     {
         $this->policy = $policy;
     }
-    
+
     /**
-     * @param array: $postScripts
+     * @param array|null $postScripts : $postScripts
      */
     public function setPostScripts(?array $postScripts): void
     {
         $this->postScripts = $postScripts;
     }
-    
+
     /**
-     * @param array: $preScripts
+     * @param array|null $preScripts : $preScripts
      */
     public function setPreScripts(?array $preScripts): void
     {
         $this->preScripts = $preScripts;
     }
-    
+
     /**
      * @param string|null $token
      */
@@ -275,7 +277,7 @@ class JobInput
     {
         $this->token = $token;
     }
-    
+
     /**
      * @param boolean $useLocalPermissions
      */
@@ -283,6 +285,6 @@ class JobInput
     {
         $this->useLocalPermissions = $useLocalPermissions;
     }
-    
+
 }
 

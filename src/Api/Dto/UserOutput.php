@@ -1,18 +1,19 @@
 <?php
+
 namespace App\Api\Dto;
 
 class UserOutput
 {
-    private $email;
-    private $id;
-    private $isActive;
-    private $roles;
-    private $username;
+    private string $email;
+    private int $id;
+    private bool $isActive;
+    private string $roles;
+    private string $username;
 
     /**
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -20,7 +21,7 @@ class UserOutput
     /**
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -28,7 +29,7 @@ class UserOutput
     /**
      * @return boolean
      */
-    public function getIsActive()
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }
@@ -36,7 +37,7 @@ class UserOutput
     /**
      * @return string
      */
-    public function getRoles()
+    public function getRoles(): string
     {
         return $this->roles;
     }
@@ -44,7 +45,7 @@ class UserOutput
     /**
      * @return string
      */
-    public function getUsername()
+    public function getUsername(): string
     {
         return $this->username;
     }
@@ -52,7 +53,7 @@ class UserOutput
     /**
      * @param string $email
      */
-    public function setEmail($email)
+    public function setEmail(string $email): void
     {
         $this->email = $email;
     }
@@ -60,7 +61,7 @@ class UserOutput
     /**
      * @param integer $id
      */
-    public function setId($id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -68,7 +69,7 @@ class UserOutput
     /**
      * @param boolean $isActive
      */
-    public function setIsActive($isActive)
+    public function setIsActive(bool $isActive): void
     {
         $this->isActive = $isActive;
     }
@@ -76,7 +77,7 @@ class UserOutput
     /**
      * @param string $roles
      */
-    public function setRoles($roles)
+    public function setRoles(string $roles): void
     {
         $this->roles = $roles;
     }
@@ -84,7 +85,7 @@ class UserOutput
     /**
      * @param string $username
      */
-    public function setUsername($username)
+    public function setUsername(string $username): void
     {
         $this->username = $username;
     }

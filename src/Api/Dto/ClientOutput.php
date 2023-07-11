@@ -1,28 +1,28 @@
 <?php
-namespace App\Api\Dto;
 
+namespace App\Api\Dto;
 
 
 class ClientOutput
 {
-    private $description;
-    private $id;
-    private $isActive = true;
-    private $maxParallelJobs = 1;
-    private $name;
-    private $owner;
-    private $postScripts;
-    private $preScripts;
-    private $quota = -1;
-    private $rsyncLongArgs;
-    private $rsyncShortArgs;
-    private $sshArgs;
-    private $url;
+    private string $description;
+    private int $id;
+    private bool $isActive = true;
+    private int $maxParallelJobs = 1;
+    private string $name;
+    private int $owner;
+    private array $postScripts;
+    private array $preScripts;
+    private int $quota = -1;
+    private string $rsyncLongArgs;
+    private string $rsyncShortArgs;
+    private string $sshArgs;
+    private string $url;
 
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -30,7 +30,7 @@ class ClientOutput
     /**
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -38,7 +38,7 @@ class ClientOutput
     /**
      * @return boolean
      */
-    public function getIsActive()
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }
@@ -46,14 +46,15 @@ class ClientOutput
     /**
      * @return integer
      */
-    public function getMaxParallelJobs()
+    public function getMaxParallelJobs(): int
     {
         return $this->maxParallelJobs;
     }
+
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -61,7 +62,7 @@ class ClientOutput
     /**
      * @return integer
      */
-    public function getOwner()
+    public function getOwner(): int
     {
         return $this->owner;
     }
@@ -69,7 +70,7 @@ class ClientOutput
     /**
      * @return array
      */
-    public function getPostScripts()
+    public function getPostScripts(): array
     {
         return $this->postScripts;
     }
@@ -77,17 +78,17 @@ class ClientOutput
     /**
      * @return array
      */
-    public function getPreScripts()
+    public function getPreScripts(): array
     {
         return $this->preScripts;
     }
 
     /**
      * Quota given in MiB
-     * 
+     *
      * @return integer
      */
-    public function getQuota()
+    public function getQuota(): int
     {
         return $this->quota;
     }
@@ -95,7 +96,7 @@ class ClientOutput
     /**
      * @return string
      */
-    public function getRsyncLongArgs()
+    public function getRsyncLongArgs(): string
     {
         return $this->rsyncLongArgs;
     }
@@ -103,7 +104,7 @@ class ClientOutput
     /**
      * @return string
      */
-    public function getRsyncShortArgs()
+    public function getRsyncShortArgs(): string
     {
         return $this->rsyncShortArgs;
     }
@@ -111,7 +112,7 @@ class ClientOutput
     /**
      * @return string
      */
-    public function getSshArgs()
+    public function getSshArgs(): string
     {
         return $this->sshArgs;
     }
@@ -119,7 +120,7 @@ class ClientOutput
     /**
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -127,7 +128,7 @@ class ClientOutput
     /**
      * @param string $description
      */
-    public function setDescription($description)
+    public function setDescription(string $description): void
     {
         $this->description = $description;
     }
@@ -135,7 +136,7 @@ class ClientOutput
     /**
      * @param integer $id
      */
-    public function setId($id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -143,7 +144,7 @@ class ClientOutput
     /**
      * @param boolean $isActive
      */
-    public function setIsActive($isActive)
+    public function setIsActive(bool $isActive): void
     {
         $this->isActive = $isActive;
     }
@@ -151,7 +152,7 @@ class ClientOutput
     /**
      * @param integer $maxParallelJobs
      */
-    public function setMaxParallelJobs($maxParallelJobs)
+    public function setMaxParallelJobs(int $maxParallelJobs): void
     {
         $this->maxParallelJobs = $maxParallelJobs;
     }
@@ -159,7 +160,7 @@ class ClientOutput
     /**
      * @param string $name
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -167,7 +168,7 @@ class ClientOutput
     /**
      * @param integer $owner
      */
-    public function setOwner($owner)
+    public function setOwner(int $owner): void
     {
         $this->owner = $owner;
     }
@@ -175,15 +176,15 @@ class ClientOutput
     /**
      * @param array $postScripts
      */
-    public function setPostScripts($postScripts)
+    public function setPostScripts(array $postScripts): void
     {
         $this->postScripts = $postScripts;
     }
 
     /**
-     * @param array $preScript
+     * @param $preScripts
      */
-    public function setPreScripts($preScripts)
+    public function setPreScripts($preScripts): void
     {
         $this->preScripts = $preScripts;
     }
@@ -191,7 +192,7 @@ class ClientOutput
     /**
      * @param integer $quota
      */
-    public function setQuota($quota)
+    public function setQuota(int $quota): void
     {
         $this->quota = $quota;
     }
@@ -199,7 +200,7 @@ class ClientOutput
     /**
      * @param string $rsyncLongArgs
      */
-    public function setRsyncLongArgs($rsyncLongArgs)
+    public function setRsyncLongArgs(string $rsyncLongArgs): void
     {
         $this->rsyncLongArgs = $rsyncLongArgs;
     }
@@ -207,7 +208,7 @@ class ClientOutput
     /**
      * @param string $rsyncShortArgs
      */
-    public function setRsyncShortArgs($rsyncShortArgs)
+    public function setRsyncShortArgs(string $rsyncShortArgs): void
     {
         $this->rsyncShortArgs = $rsyncShortArgs;
     }
@@ -215,7 +216,7 @@ class ClientOutput
     /**
      * @param string $sshArgs
      */
-    public function setSshArgs($sshArgs)
+    public function setSshArgs(string $sshArgs): void
     {
         $this->sshArgs = $sshArgs;
     }
@@ -223,7 +224,7 @@ class ClientOutput
     /**
      * @param string $url
      */
-    public function setUrl($url)
+    public function setUrl(string $url): void
     {
         $this->url = $url;
     }

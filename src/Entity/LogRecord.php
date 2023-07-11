@@ -5,7 +5,8 @@
  */
 
 namespace App\Entity;
-use Doctrine\ORM\Mapping as ORM;
+
+use DateTime;
 
 /**
  * @ORM\Entity
@@ -17,70 +18,70 @@ class LogRecord
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id;
+    protected int $id;
 
     /**
      * @ORM\Column(type="string")
      */
-    protected $channel;
+    protected string $channel;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    protected $dateTime;
+    protected DateTime $dateTime;
 
     /**
      * @ORM\Column(type="integer")
      */
-    protected $level;
+    protected int $level;
 
     /**
      * @ORM\Column(type="string")
      */
-    protected $levelName;
+    protected string $levelName;
 
     /**
      * @ORM\Column(type="string", nullable=true)
      */
-    protected $link;
+    protected string $link;
 
     /**
      * @ORM\Column(type="text")
      */
-    protected $message;
+    protected string $message;
 
     /**
      * @ORM\Column(type="string", nullable=true)
      */
-    protected $source;
+    protected string $source;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    protected $userId;
+    protected int $userId;
 
     /**
      * @ORM\Column(type="string", nullable=true)
      */
-    protected $userName;
+    protected string $userName;
 
     /**
-      * @ORM\Column(type="string", nullable=true)
-      */
-    protected $logFile;
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected string $logFile;
 
     public function __construct($channel, $dateTime, $level, $levelName, $message, $link = NULL, $source = NULL, $userId = NULL, $userName = NULL, $logFile = NULL)
     {
-        $this->channel   = $channel;
-        $this->dateTime  = $dateTime;
-        $this->level     = $level;
+        $this->channel = $channel;
+        $this->dateTime = $dateTime;
+        $this->level = $level;
         $this->levelName = $levelName;
-        $this->link      = $link;
-        $this->message   = $message;
-        $this->source    = $source;
-        $this->userId    = $userId;
-        $this->userName  = $userName;
-        $this->logFile   = $logFile;
+        $this->link = $link;
+        $this->message = $message;
+        $this->source = $source;
+        $this->userId = $userId;
+        $this->userName = $userName;
+        $this->logFile = $logFile;
     }
 
     /**
@@ -88,7 +89,7 @@ class LogRecord
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -99,7 +100,7 @@ class LogRecord
      * @param string $channel
      * @return LogRecord
      */
-    public function setChannel($channel)
+    public function setChannel(string $channel): static
     {
         $this->channel = $channel;
 
@@ -111,7 +112,7 @@ class LogRecord
      *
      * @return string
      */
-    public function getChannel()
+    public function getChannel(): string
     {
         return $this->channel;
     }
@@ -119,10 +120,10 @@ class LogRecord
     /**
      * Set dateTime
      *
-     * @param \DateTime $dateTime
+     * @param DateTime $dateTime
      * @return LogRecord
      */
-    public function setDateTime($dateTime)
+    public function setDateTime(DateTime $dateTime): static
     {
         $this->dateTime = $dateTime;
 
@@ -132,9 +133,9 @@ class LogRecord
     /**
      * Get dateTime
      *
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getDateTime()
+    public function getDateTime(): DateTime
     {
         return $this->dateTime;
     }
@@ -145,7 +146,7 @@ class LogRecord
      * @param integer $level
      * @return LogRecord
      */
-    public function setLevel($level)
+    public function setLevel(int $level): static
     {
         $this->level = $level;
 
@@ -157,7 +158,7 @@ class LogRecord
      *
      * @return integer
      */
-    public function getLevel()
+    public function getLevel(): int
     {
         return $this->level;
     }
@@ -168,7 +169,7 @@ class LogRecord
      * @param string $levelName
      * @return LogRecord
      */
-    public function setLevelName($levelName)
+    public function setLevelName(string $levelName): static
     {
         $this->levelName = $levelName;
 
@@ -180,7 +181,7 @@ class LogRecord
      *
      * @return string
      */
-    public function getLevelName()
+    public function getLevelName(): string
     {
         return $this->levelName;
     }
@@ -191,7 +192,7 @@ class LogRecord
      * @param string $message
      * @return LogRecord
      */
-    public function setMessage($message)
+    public function setMessage(string $message): static
     {
         $this->message = $message;
 
@@ -203,7 +204,7 @@ class LogRecord
      *
      * @return string
      */
-    public function getMessage()
+    public function getMessage(): string
     {
         return $this->message;
     }
@@ -214,7 +215,7 @@ class LogRecord
      * @param string $source
      * @return LogRecord
      */
-    public function setSource($source)
+    public function setSource(string $source): static
     {
         $this->source = $source;
 
@@ -224,9 +225,9 @@ class LogRecord
     /**
      * Get source
      *
-     * @return string
+     * @return string|null
      */
-    public function getSource()
+    public function getSource(): ?string
     {
         return $this->source;
     }
@@ -237,7 +238,7 @@ class LogRecord
      * @param integer $userId
      * @return LogRecord
      */
-    public function setUserId($userId)
+    public function setUserId(int $userId): static
     {
         $this->userId = $userId;
 
@@ -247,9 +248,9 @@ class LogRecord
     /**
      * Get userId
      *
-     * @return integer
+     * @return int|null
      */
-    public function getUserId()
+    public function getUserId(): ?int
     {
         return $this->userId;
     }
@@ -260,7 +261,7 @@ class LogRecord
      * @param string $userName
      * @return LogRecord
      */
-    public function setUserName($userName)
+    public function setUserName(string $userName): static
     {
         $this->userName = $userName;
 
@@ -270,9 +271,9 @@ class LogRecord
     /**
      * Get userName
      *
-     * @return string
+     * @return string|null
      */
-    public function getUserName()
+    public function getUserName(): ?string
     {
         return $this->userName;
     }
@@ -283,7 +284,7 @@ class LogRecord
      * @param string $link
      * @return LogRecord
      */
-    public function setLink($link)
+    public function setLink(string $link): static
     {
         $this->link = $link;
 
@@ -293,9 +294,9 @@ class LogRecord
     /**
      * Get link
      *
-     * @return string
+     * @return string|null
      */
-    public function getLink()
+    public function getLink(): ?string
     {
         return $this->link;
     }
@@ -306,7 +307,7 @@ class LogRecord
      * @param string $logfile
      * @return LogRecord
      */
-    public function setLogfile($logfile)
+    public function setLogfile(string $logfile): static
     {
         $this->logFile = $logfile;
         return $this;
@@ -315,16 +316,16 @@ class LogRecord
     /**
      * Get logfile
      *
-     * @return string
+     * @return string|null
      */
-    public function getLogfile()
+    public function getLogfile(): ?string
     {
-       return $this->logFile;
+        return $this->logFile;
     }
 
-    public function getLogfilePath()
+    public function getLogfilePath(): string
     {
-       return sprintf('%s/%s/%s', $this->getLogDirectory(), 'jobs', $this->getLogfile());
+        return sprintf('%s/%s/%s', $this->getLogDirectory(), 'jobs', $this->getLogfile());
     }
 
     public function getLogDirectory()

@@ -1,18 +1,19 @@
 <?php
+
 namespace App\Api\Dto;
 
 class BackupLocationOutput
 {
-    private $directory;
-    private $host;
-    private $id;
-    private $maxParallelJobs;
-    private $name;
-    
+    private string $directory;
+    private string $host;
+    private int $id;
+    private int $maxParallelJobs;
+    private string $name;
+
     /**
      * @return string
      */
-    public function getDirectory()
+    public function getDirectory(): string
     {
         return $this->directory;
     }
@@ -20,14 +21,15 @@ class BackupLocationOutput
     /**
      * @return string
      */
-    public function getHost()
+    public function getHost(): string
     {
         return $this->host;
     }
+
     /**
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -35,7 +37,7 @@ class BackupLocationOutput
     /**
      * @return integer
      */
-    public function getMaxParallelJobs()
+    public function getMaxParallelJobs(): int
     {
         return $this->maxParallelJobs;
     }
@@ -43,7 +45,7 @@ class BackupLocationOutput
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -51,7 +53,7 @@ class BackupLocationOutput
     /**
      * @param string $directory
      */
-    public function setDirectory($directory)
+    public function setDirectory(string $directory): void
     {
         $this->directory = $directory;
     }
@@ -59,7 +61,7 @@ class BackupLocationOutput
     /**
      * @param string $host
      */
-    public function setHost($host)
+    public function setHost(string $host): void
     {
         $this->host = $host;
     }
@@ -67,7 +69,7 @@ class BackupLocationOutput
     /**
      * @param integer $id
      */
-    public function setId($id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -75,7 +77,7 @@ class BackupLocationOutput
     /**
      * @param integer $maxParallelJobs
      */
-    public function setMaxParallelJobs($maxParallelJobs)
+    public function setMaxParallelJobs(int $maxParallelJobs): void
     {
         $this->maxParallelJobs = $maxParallelJobs;
     }
@@ -83,7 +85,7 @@ class BackupLocationOutput
     /**
      * @param string $name
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }

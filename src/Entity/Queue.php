@@ -6,7 +6,7 @@
 
 namespace App\Entity;
 
-use \DateTime;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -20,48 +20,48 @@ class Queue
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id;
+    protected int $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="Job")
      */
-    protected $job;
+    protected Job $job;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    protected $date;
+    protected DateTime $date;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $runningSince;
-    
+    protected DateTime $runningSince;
+
     /**
      * @ORM\Column(type="integer")
      */
-    protected $priority;
-    
+    protected int $priority;
+
     /**
      * Variable to show the state in the queue
      *
      * @ORM\Column(type="string",length=255, nullable=false)
      */
-    protected $state;
-    
+    protected string $state;
+
     /**
-     * Variable to show if the task is aborted and its state
+     * Variable to show if the task is aborted and its state.
      *
      * @ORM\Column(type="boolean")
      */
-    protected $aborted;
-    
+    protected bool $aborted;
+
     /**
      * Data generated during the execution
      *
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $data;
+    protected string $data;
 
     public function __construct($job = null)
     {
@@ -76,27 +76,27 @@ class Queue
      * Get id
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
     /**
      * Get job
-     * @return App\Entity\Job
+     * @return Job
      */
-    public function getJob()
+    public function getJob(): Job
     {
         return $this->job;
     }
 
     /**
      * Set job
-     * 
-     * @param App\Entity\Job $job
-     * @return Queue
+     *
+     * @param Job $job
+     * @return void
      */
-    public function setJob($job)
+    public function setJob(Job $job): void
     {
         $this->job = $job;
     }
@@ -106,7 +106,7 @@ class Queue
      *
      * @return datetime
      */
-    public function getDate()
+    public function getDate(): DateTime
     {
         return $this->date;
     }
@@ -115,9 +115,9 @@ class Queue
      * Set date
      *
      * @param datetime $date
-     * @return Queue
+     * @return void
      */
-    public function setDate($date)
+    public function setDate(DateTime $date): void
     {
         $this->date = $date;
     }
@@ -127,7 +127,7 @@ class Queue
      *
      * @return datetime
      */
-    public function getRunningSince()
+    public function getRunningSince(): DateTime
     {
         return $this->runningSince;
     }
@@ -136,98 +136,97 @@ class Queue
      * Set running since
      *
      * @param datetime $runningSince
-     * @return Queue
+     * @return void
      */
-    public function setRunningSince($runningSince)
+    public function setRunningSince(DateTime $runningSince): void
     {
         $this->runningSince = $runningSince;
     }
-    
+
     /**
      * Get priority
      *
-     * @return Queue
+     * @return int
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return $this->priority;
     }
-    
+
     /**
      * Set priority
      *
      * @param integer $priority
-     * 
-     * @return Queue
+     *
+     * @return void
      */
-    public function setPriority($priority)
+    public function setPriority(int $priority): void
     {
         $this->priority = $priority;
     }
-    
+
     /**
      * Get State
-     * 
-     * @return Queue
+     *
+     * @return string
      */
-    public function getState()
+    public function getState(): string
     {
         return $this->state;
     }
-    
+
     /**
      * Set State
-     * 
+     *
      * @param string $state
-     * 
-     * @return Queue
+     *
+     * @return void
      */
-    public function setState($state)
+    public function setState(string $state): void
     {
         $this->state = $state;
     }
-    
+
     /**
      * Get aborted
-     * 
-     * @return Queue
+     *
+     * @return bool
      */
-    public function getAborted()
+    public function getAborted(): bool
     {
         return $this->aborted;
     }
-    
+
     /**
      * Set aborted
-     * 
+     *
      * @param boolean $aborted
-     * 
-     * @return Queue
+     *
+     * @return void
      */
-    public function setAborted($aborted)
+    public function setAborted(bool $aborted): void
     {
         $this->aborted = $aborted;
     }
-    
+
     /**
      * Get data
-     * 
+     *
      * @return array
      */
-    public function getData()
+    public function getData(): array
     {
-        $decodedData = json_decode($this->data, true);
-        return $decodedData;;
+        return json_decode($this->data, true);
     }
-    
+
     /**
      * Set data
-     * 
+     *
      * @param array $data
-     * 
-     * @return Queue
+     *
+     * @return void
      */
-    public function setData($data)
+    public function setData(array $data): void
     {
         $this->data = json_encode($data);
     }

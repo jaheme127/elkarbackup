@@ -6,8 +6,7 @@
 
 namespace App\Entity;
 
-use \DateTime;
-use Doctrine\ORM\Mapping as ORM;
+use DateTime;
 
 /**
  *
@@ -20,34 +19,34 @@ class Message
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string", name="origin", length=32)
      */
-    private $from;
+    private string $from;
 
     /**
      * @ORM\Column(type="string", name="destination", length=32)
      */
-    private $to;
+    private string $to;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $message;
+    private string $message;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    protected $dateTime;
+    protected DateTime $dateTime;
 
     public function __construct($from = null, $to = null, $message = null)
     {
         $this->dateTime = new DateTime();
-        $this->from     = $from;
-        $this->message  = $message;
-        $this->to       = $to;
+        $this->from = $from;
+        $this->message = $message;
+        $this->to = $to;
     }
 
     /**
@@ -55,7 +54,7 @@ class Message
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -66,7 +65,7 @@ class Message
      * @param string $from
      * @return Message
      */
-    public function setFrom($from)
+    public function setFrom(string $from): static
     {
         $this->from = $from;
         return $this;
@@ -75,9 +74,9 @@ class Message
     /**
      * Get from
      *
-     * @return string
+     * @return string|null
      */
-    public function getFrom()
+    public function getFrom(): ?string
     {
         return $this->from;
     }
@@ -88,7 +87,7 @@ class Message
      * @param string $to
      * @return Message
      */
-    public function setTo($to)
+    public function setTo(string $to): static
     {
         $this->to = $to;
         return $this;
@@ -97,9 +96,9 @@ class Message
     /**
      * Get to
      *
-     * @return string
+     * @return string|null
      */
-    public function getTo()
+    public function getTo(): ?string
     {
         return $this->to;
     }
@@ -107,10 +106,10 @@ class Message
     /**
      * Set message
      *
-     * @param text $message
+     * @param string $message
      * @return Message
      */
-    public function setMessage($message)
+    public function setMessage(string $message): static
     {
         $this->message = $message;
         return $this;
@@ -119,9 +118,9 @@ class Message
     /**
      * Get message
      *
-     * @return text
+     * @return string|null
      */
-    public function getMessage()
+    public function getMessage(): ?string
     {
         return $this->message;
     }
@@ -132,7 +131,7 @@ class Message
      * @param datetime $dateTime
      * @return Message
      */
-    public function setDateTime($dateTime)
+    public function setDateTime(DateTime $dateTime): static
     {
         $this->dateTime = $dateTime;
         return $this;
@@ -143,7 +142,7 @@ class Message
      *
      * @return datetime
      */
-    public function getDateTime()
+    public function getDateTime(): DateTime
     {
         return $this->dateTime;
     }

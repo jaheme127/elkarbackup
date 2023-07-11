@@ -6,13 +6,6 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Api\Dto\BackupLocationOutput;
-use App\Lib\Globals;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-use \RuntimeException;
-
 /**
  * @ApiResource(
  *     output = BackupLocationOutput::class,
@@ -31,22 +24,22 @@ class BackupLocation
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id;
+    protected int $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    protected $name;
+    protected string $name;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $host = null;
+    protected ?string $host = null;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    protected $directory;
+    protected string $directory;
 
     /**
      * Parallel jobs allowed for the location
@@ -58,25 +51,25 @@ class BackupLocation
      *     message="Max parallel jobs value must be a positive integer"
      * )
      */
-    protected $maxParallelJobs = 1;
-    
+    protected int $maxParallelJobs = 1;
+
     /**
      * Get max parallel jobs
      *
      * @return integer
      */
-    public function getMaxParallelJobs()
+    public function getMaxParallelJobs(): int
     {
         return $this->maxParallelJobs;
     }
-    
+
     /**
      * Set max parallel jobs
      *
      * @param integer $maxParallelJobs
-     * @return Client
+     * @return void
      */
-    public function setMaxParallelJobs($maxParallelJobs)
+    public function setMaxParallelJobs(int $maxParallelJobs): void
     {
         $this->maxParallelJobs = $maxParallelJobs;
     }
@@ -86,7 +79,7 @@ class BackupLocation
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -96,7 +89,7 @@ class BackupLocation
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -105,51 +98,51 @@ class BackupLocation
      * Set name
      *
      * @param string $name
-     * @return BackupLocation
+     * @return void
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
 
     /**
      * Get host
-     * 
+     *
      * @return string
      */
-    public function getHost()
+    public function getHost(): ?string
     {
         return $this->host;
     }
 
     /**
      * Set host
-     * 
+     *
      * @param string $host
-     * @return BackupLocation
+     * @return void
      */
-    public function setHost($host)
+    public function setHost(string $host): void
     {
         $this->host = $host;
     }
 
     /**
      * Get directory
-     * 
+     *
      * @return string
      */
-    public function getDirectory()
+    public function getDirectory(): string
     {
         return $this->directory;
     }
 
     /**
      * Set directory
-     * 
+     *
      * @param string $directory
-     * @return BackupLocation
+     * @return void
      */
-    public function setDirectory($directory)
+    public function setDirectory(string $directory): void
     {
         $this->directory = $directory;
     }
@@ -161,12 +154,12 @@ class BackupLocation
      *
      * @return string
      */
-    public function getEffectiveDir()
+    public function getEffectiveDir(): string
     {
         if ("" == $this->getHost()) {
             return $this->getDirectory();
         } else {
-            return sprintf('/net/%s%s',$this->getHost(), $this->getDirectory());
+            return sprintf('/net/%s%s', $this->getHost(), $this->getDirectory());
         }
     }
 }

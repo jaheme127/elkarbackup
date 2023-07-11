@@ -7,65 +7,65 @@
 namespace App\Command;
 
 use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
-use Symfony\Component\Console\Command\Command;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-class CreateAdminUserCommand extends ContainerAwareCommand
+class CreateAdminUserCommand extends Command
 {
-    private $encoderFactory;
+    private string|PasswordHasherFactoryInterface|null $encoderFactory;
+    private EntityManagerInterface $entityManager;
+
     /**
      * {@inheritDoc}
-     * @see \Symfony\Component\Console\Command\Command::__construct()
+     * @see Command::__construct()
      */
-    public function __construct(EncoderFactoryInterface $encoder)
+    public function __construct(PasswordHasherFactoryInterface $encoder, EntityManagerInterface $manager)
     {
         $this->encoderFactory = $encoder;
+        $this->entityManager = $manager;
         parent::__construct();
     }
-    
-    protected function configure()
+
+    protected function configure(): void
     {
         parent::configure();
         $this->setName('elkarbackup:create_admin')
-             ->addOption('reset', null, InputOption::VALUE_NONE, 'Reset the root account to the original values')
-             ->setDescription('Creates initial admin user');
+            ->addOption('reset', null, InputOption::VALUE_NONE, 'Reset the root account to the original values')
+            ->setDescription('Creates initial admin user');
     }
 
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (0 != posix_geteuid()) {
             echo "You have to be root to run this command\n";
 
             return 1;
         }
-        $container = $this->getContainer();
-        $doctrine = $container->get('doctrine');
-        $em = $doctrine->getManager();
-        $user = $doctrine->getRepository('App:User')->find(User::SUPERUSER_ID);
+
+        $user = $this->entityManager->getRepository(User::class)->find(User::SUPERUSER_ID);
         if (!$user) {
             $user = new User();
         } else if ($input->getOption('reset')) {
             echo "Admin user exists. Trying to reset to initial values.\n";
         } else {
             echo "Admin user exists and reset was not requested. Nothing to do.\n";
-
             return 0;
         }
         $factory = $this->encoderFactory;
-        $encoder = $factory->getEncoder($user);
+        $encoder = $factory->getPasswordHasher($user);
         $user->setUsername('root');
         $user->setEmail('root@localhost');
         $user->setRoles(array('ROLE_ADMIN'));
         $user->setSalt(md5(uniqid(null, true)));
-        $password = $encoder->encodePassword('root', $user->getSalt());
+        $password = $encoder->hash('root');
         $user->setPassword($password);
-        $em->persist($user);
-        $em->flush();
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
         return 0;
     }

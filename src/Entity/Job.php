@@ -6,16 +6,9 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiFilter;
-use App\Api\Dto\JobInput;
-use App\Api\Dto\JobOutput;
-use App\Api\Filter\JobByNameFilter;
-use App\Api\Filter\JobClientFilter;
 use App\Lib\Globals;
-use Doctrine\ORM\Mapping as ORM;
-use Monolog\Logger;
-use \RuntimeException;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * @ApiResource(
@@ -36,96 +29,94 @@ class Job
     const NOTIFY_TO_OWNER = 'owner';
     const NOTIFY_TO_EMAIL = 'email';
 
-    const NOTIFICATION_LEVEL_ALL     = 0;
-    const NOTIFICATION_LEVEL_INFO    = Logger::INFO;
-    const NOTIFICATION_LEVEL_WARNING = Logger::WARNING;
-    const NOTIFICATION_LEVEL_ERROR   = Logger::ERROR;
-    const NOTIFICATION_LEVEL_NONE    = 1000;
+    const NOTIFICATION_LEVEL_ALL = 0;
+    const NOTIFICATION_LEVEL_NONE = 1000;
+    const NOTIFICATION_LEVEL_ERROR = 200;
 
     /**
      * @ApiFilter(JobClientFilter::class)
      * @ORM\ManyToOne(targetEntity="Client", inversedBy="jobs")
      */
-    protected $client;
+    protected Client $client;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $description;
+    protected string $description;
 
     /**
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id;
+    protected int $id;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    protected $isActive = true;
+    protected bool $isActive = true;
 
     /**
      * @ApiFilter(JobByNameFilter::class)
      * @ORM\Column(type="string", length=255)
      */
-    protected $name;
+    protected string $name;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $notificationsEmail;
+    protected string $notificationsEmail;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    protected $notificationsTo = '["owner"]';
+    protected string $notificationsTo = '["owner"]';
 
     /**
      * @ORM\Column(type="integer")
      */
-    protected $minNotificationLevel = self::NOTIFICATION_LEVEL_ERROR;
+    protected int $minNotificationLevel = self::NOTIFICATION_LEVEL_ERROR;
 
     /**
      * Include expressions
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $include;
+    protected string $include;
 
     /**
      * Exclude expressions
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $exclude;
+    protected string $exclude;
 
     /**
      * @ORM\ManyToOne(targetEntity="Policy")
      */
-    protected $policy;
+    protected Policy $policy;
 
     /**
      * @ORM\ManyToMany(targetEntity="Script", inversedBy="postJobs")
      * @ORM\JoinTable(name="JobScriptPost")
      */
-    protected $postScripts;
+    protected ArrayCollection $postScripts;
 
     /**
      * @ORM\ManyToMany(targetEntity="Script", inversedBy="preJobs")
      * @ORM\JoinTable(name="JobScriptPre")
      */
-    protected $preScripts;
+    protected ArrayCollection $preScripts;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    protected $path;
+    protected string $path;
 
     /**
      * Disk usage in KB.
      *
      * @ORM\Column(type="bigint")
      */
-    protected $diskUsage = 0;
+    protected int $diskUsage = 0;
 
     /**
      * Priority. Lower numbered jobs run first. Set to 2**31-1 for newly
@@ -133,40 +124,40 @@ class Job
      *
      * @ORM\Column(type="integer")
      */
-    protected $priority = 2147483647;
+    protected int $priority = 2147483647;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    protected $useLocalPermissions = true;
+    protected bool $useLocalPermissions = true;
 
     /**
      * Helper variable to store the LogEntry to show on screen,
      * typically the last log LogRecord related to this client.
      */
-    protected $logEntry = null;
+    protected ?LogRecord $logEntry = null;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
      * Job lastResult: ok, fail
      */
-    protected $lastResult = null;
+    protected ?string $lastResult = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * Security token for remote management
      */
-    protected $token = null;
+    protected ?string $token = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="BackupLocation")
      */
-    protected $backupLocation;
+    protected BackupLocation $backupLocation;
 
     /**
      * Returns the full path of the snapshot directory
      */
-    public function getSnapshotRoot()
+    public function getSnapshotRoot(): string
     {
         return Globals::getSnapshotRoot($this->getClient()->getId(), $this);
     }
@@ -177,7 +168,7 @@ class Job
      * @param string $description
      * @return Job
      */
-    public function setDescription($description)
+    public function setDescription(string $description): static
     {
         $this->description = $description;
 
@@ -189,7 +180,7 @@ class Job
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -199,7 +190,7 @@ class Job
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -210,7 +201,7 @@ class Job
      * @param string $name
      * @return Job
      */
-    public function setName($name)
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -222,7 +213,7 @@ class Job
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -233,7 +224,7 @@ class Job
      * @param string $path
      * @return Job
      */
-    public function setPath($path)
+    public function setPath(string $path): static
     {
         $this->path = $path;
 
@@ -245,7 +236,7 @@ class Job
      *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -255,28 +246,28 @@ class Job
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         $clientUrl = $this->client->getUrl();
         if (empty($clientUrl)) {
 
             return $this->path;
         } else {
-          // return url without ssh_args
-          if (strpos($clientUrl, 'ssh_args') !== false) {
-            $clientUrl = explode(" ", $clientUrl)[0];
-          }
-          return sprintf("%s:%s", $clientUrl, $this->path);
+            // return url without ssh_args
+            if (str_contains($clientUrl, 'ssh_args')) {
+                $clientUrl = explode(" ", $clientUrl)[0];
+            }
+            return sprintf("%s:%s", $clientUrl, $this->path);
         }
     }
 
     /**
      * Set client
      *
-     * @param App\Entity\Client $client
+     * @param Client|null $client
      * @return Job
      */
-    public function setClient(\App\Entity\Client $client = null)
+    public function setClient(Client $client = null): static
     {
         $this->client = $client;
 
@@ -286,9 +277,9 @@ class Job
     /**
      * Get client
      *
-     * @return App\Entity\Client
+     * @return Client
      */
-    public function getClient()
+    public function getClient(): Client
     {
         return $this->client;
     }
@@ -297,9 +288,9 @@ class Job
      * Set include
      *
      * @param string $include
-     * @return Policy
+     * @return Job
      */
-    public function setInclude($include)
+    public function setInclude(string $include): static
     {
         $this->include = $include;
 
@@ -313,7 +304,7 @@ class Job
      *
      * @return string
      */
-    public function getInclude()
+    public function getInclude(): string
     {
         $include = '';
         if (!empty($this->include)) {
@@ -329,9 +320,9 @@ class Job
      * Set exclude
      *
      * @param string $exclude
-     * @return Policy
+     * @return Job
      */
-    public function setExclude($exclude)
+    public function setExclude(string $exclude): Job
     {
         $this->exclude = $exclude;
 
@@ -345,7 +336,7 @@ class Job
      *
      * @return string
      */
-    public function getExclude()
+    public function getExclude(): string
     {
         $exclude = '';
         if (!empty($this->exclude)) {
@@ -360,10 +351,10 @@ class Job
     /**
      * Set policy
      *
-     * @param App\Entity\Policy $policy
+     * @param Policy|null $policy
      * @return Job
      */
-    public function setPolicy(\App\Entity\Policy $policy = null)
+    public function setPolicy(Policy $policy = null): static
     {
         $this->policy = $policy;
 
@@ -373,9 +364,9 @@ class Job
     /**
      * Get policy
      *
-     * @return App\Entity\Policy
+     * @return Policy
      */
-    public function getPolicy()
+    public function getPolicy(): Policy
     {
         return $this->policy;
     }
@@ -386,7 +377,7 @@ class Job
      * @param boolean $isActive
      * @return Job
      */
-    public function setIsActive($isActive)
+    public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
 
@@ -398,7 +389,7 @@ class Job
      *
      * @return boolean
      */
-    public function getIsActive()
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }
@@ -410,9 +401,9 @@ class Job
      * @param string $notificationsTo
      * @return Job
      */
-    public function setNotificationsTo($notificationsTo)
+    public function setNotificationsTo(string $notificationsTo): static
     {
-        $this->notificationsTo = json_encode(array_values($notificationsTo));
+        $this->notificationsTo = json_encode(array_values((array)$notificationsTo));
 
         return $this;
     }
@@ -422,7 +413,7 @@ class Job
      *
      * @return string
      */
-    public function getNotificationsTo()
+    public function getNotificationsTo(): string
     {
         return json_decode($this->notificationsTo, true);
     }
@@ -433,7 +424,7 @@ class Job
      * @param string $notificationsEmail
      * @return Job
      */
-    public function setNotificationsEmail($notificationsEmail)
+    public function setNotificationsEmail(string $notificationsEmail): static
     {
         $this->notificationsEmail = $notificationsEmail;
 
@@ -445,7 +436,7 @@ class Job
      *
      * @return string
      */
-    public function getNotificationsEmail()
+    public function getNotificationsEmail(): string
     {
         return $this->notificationsEmail;
     }
@@ -456,7 +447,7 @@ class Job
      * @param integer $minNotificationLevel
      * @return Job
      */
-    public function setMinNotificationLevel($minNotificationLevel)
+    public function setMinNotificationLevel(int $minNotificationLevel): static
     {
         $this->minNotificationLevel = $minNotificationLevel;
 
@@ -468,7 +459,7 @@ class Job
      *
      * @return integer
      */
-    public function getMinNotificationLevel()
+    public function getMinNotificationLevel(): int
     {
         return $this->minNotificationLevel;
     }
@@ -476,10 +467,10 @@ class Job
     /**
      * Set LogEntry
      *
-     * @param LogRecord $LogEntry
-     * @return Client
+     * @param LogRecord|null $logEntry
+     * @return Job
      */
-    public function setLogEntry(LogRecord $logEntry = null)
+    public function setLogEntry(LogRecord $logEntry = null): static
     {
         $this->logEntry = $logEntry;
 
@@ -489,9 +480,9 @@ class Job
     /**
      * Get LogEntry
      *
-     * @return LogRecord
+     * @return LogRecord|null
      */
-    public function getLogEntry()
+    public function getLogEntry(): ?LogRecord
     {
         return $this->logEntry;
     }
@@ -499,10 +490,10 @@ class Job
     /**
      * Set diskUsage
      *
-     * @param bigint $diskUsage
+     * @param int $diskUsage
      * @return Job
      */
-    public function setDiskUsage($diskUsage)
+    public function setDiskUsage(int $diskUsage): static
     {
         $this->diskUsage = $diskUsage;
 
@@ -512,9 +503,9 @@ class Job
     /**
      * Get diskUsage
      *
-     * @return bigint
+     * @return int
      */
-    public function getDiskUsage()
+    public function getDiskUsage(): int
     {
         return $this->diskUsage;
     }
@@ -525,7 +516,7 @@ class Job
      * @param integer $Priority
      * @return Job
      */
-    public function setPriority($Priority)
+    public function setPriority(int $Priority): static
     {
         $this->priority = $Priority;
 
@@ -537,7 +528,7 @@ class Job
      *
      * @return integer
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return $this->priority;
     }
@@ -548,7 +539,7 @@ class Job
      * @param boolean $useLocalPermissions
      * @return Job
      */
-    public function setUseLocalPermissions($useLocalPermissions)
+    public function setUseLocalPermissions(bool $useLocalPermissions): static
     {
         $this->useLocalPermissions = $useLocalPermissions;
         return $this;
@@ -559,23 +550,24 @@ class Job
      *
      * @return boolean
      */
-    public function getUseLocalPermissions()
+    public function getUseLocalPermissions(): bool
     {
         return $this->useLocalPermissions;
     }
+
     public function __construct()
     {
-        $this->postScripts = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->preScripts = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->postScripts = new ArrayCollection();
+        $this->preScripts = new ArrayCollection();
     }
 
     /**
      * Add postScript
      *
-     * @param App\Entity\Script $postScript
+     * @param Script $postScript
      * @return Job
      */
-    public function addPostScript(Script $postScript)
+    public function addPostScript(Script $postScript): static
     {
         $this->postScripts[] = $postScript;
         return $this;
@@ -584,9 +576,9 @@ class Job
     /**
      * Remove postScript
      *
-     * @param App\Entity\Script $postScript
+     * @param Script $postScript
      */
-    public function removePostScript(Script $postScript)
+    public function removePostScript(Script $postScript): void
     {
         $this->postScripts->removeElement($postScript);
     }
@@ -594,10 +586,10 @@ class Job
     /**
      * Add preScripts
      *
-     * @param App\Entity\Script $preScripts
+     * @param Script $preScripts
      * @return Job
      */
-    public function addPreScript(Script $preScripts)
+    public function addPreScript(Script $preScripts): static
     {
         $this->preScripts[] = $preScripts;
         return $this;
@@ -606,9 +598,9 @@ class Job
     /**
      * Remove preScripts
      *
-     * @param App\Entity\Script $preScripts
+     * @param Script $preScripts
      */
-    public function removePreScript(Script $preScripts)
+    public function removePreScript(Script $preScripts): void
     {
         $this->preScripts->removeElement($preScripts);
     }
@@ -616,9 +608,9 @@ class Job
     /**
      * Get preScripts
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getPreScripts()
+    public function getPreScripts(): Collection
     {
         return $this->preScripts;
     }
@@ -626,9 +618,9 @@ class Job
     /**
      * Get postScripts
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getPostScripts()
+    public function getPostScripts(): Collection
     {
         return $this->postScripts;
     }
@@ -640,7 +632,7 @@ class Job
      *
      * @return Job
      */
-    public function setLastResult($lastResult)
+    public function setLastResult(string $lastResult): static
     {
         $this->lastResult = $lastResult;
 
@@ -650,9 +642,9 @@ class Job
     /**
      * Get last result
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastResult()
+    public function getLastResult(): ?string
     {
         return $this->lastResult;
     }
@@ -664,7 +656,7 @@ class Job
      *
      * @return Job
      */
-    public function setToken($token)
+    public function setToken(string $token): static
     {
         $this->token = $token;
 
@@ -674,29 +666,29 @@ class Job
     /**
      * Get token
      *
-     * @return string
+     * @return string|null
      */
-    public function getToken()
+    public function getToken(): ?string
     {
         return $this->token;
     }
 
     /**
      * Get backupLocation
-     * @return App\Entity\BackupLocation
+     * @return BackupLocation
      */
-    public function getBackupLocation()
+    public function getBackupLocation(): BackupLocation
     {
         return $this->backupLocation;
     }
 
     /**
      * Set backupLocation
-     * 
-     * @param App\Entity\BackupLocation $backupLocation
-     * @return Job
+     *
+     * @param BackupLocation $backupLocation
+     * @return void
      */
-    public function setBackupLocation($backupLocation)
+    public function setBackupLocation(BackupLocation $backupLocation): void
     {
         $this->backupLocation = $backupLocation;
     }

@@ -6,15 +6,8 @@
 
 namespace App\Entity;
 
-use App\Api\Dto\ClientInput;
-use App\Api\Dto\ClientOutput;
-use App\Api\Filter\ClientByNameFilter;
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Lib\Globals;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-use \RuntimeException;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * @ApiResource(
@@ -36,94 +29,94 @@ class Client
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $description;
+    protected string $description;
 
     /**
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id;
+    protected int $id;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    protected $isActive = true;
+    protected bool $isActive = true;
 
     /**
      * @ORM\OneToMany(targetEntity="Job", mappedBy="client", cascade={"remove"})
      */
-    protected $jobs;
+    protected ArrayCollection $jobs;
 
     /**
      * @ApiFilter(ClientByNameFilter::class)
      * @ORM\Column(type="string", length=255, unique=true)
      */
-    protected $name;
+    protected string $name;
 
     /**
      * @ORM\ManyToMany(targetEntity="Script", inversedBy="postClients")
      * @ORM\JoinTable(name="ClientScriptPost")
      */
-    protected $postScripts;
+    protected Collection $postScripts;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    protected $url = '';
+    protected string $url = '';
 
     /**
      * @ORM\ManyToMany(targetEntity="Script", inversedBy="preClients")
      * @ORM\JoinTable(name="ClientScriptPre")
      */
-    protected $preScripts;
+    protected Collection $preScripts;
 
     /**
      * Quota in KB. -1 means no limit, which is the default.
      *
      * @ORM\Column(type="bigint")
      */
-    protected $quota = self::QUOTA_UNLIMITED;
+    protected int $quota = self::QUOTA_UNLIMITED;
 
     /**
      * Helper variable to store the LogEntry to show on screen,
      * typically the last log LogRecord related to this client.
      */
-    protected $logEntry = null;
+    protected ?LogRecord $logEntry = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="User")
      */
-    protected $owner;
+    protected User $owner;
 
     /**
      * Rsnapshot ssh_args parameter
      *
      * @ORM\Column(type="string",length=255, nullable=true)
      */
-    protected $sshArgs;
+    protected string $sshArgs;
 
     /**
      * Rsnapshot rsync_short_args parameter
      *
      * @ORM\Column(type="string",length=255, nullable=true)
      */
-    protected $rsyncShortArgs;
+    protected string $rsyncShortArgs;
 
     /**
      * Rsnapshot rsync_long_args parameter
      *
      * @ORM\Column(type="string",length=255, nullable=true)
      */
-    protected $rsyncLongArgs;
-    
+    protected string $rsyncLongArgs;
+
     /**
      * Variable to show the state in the queue
      *
      * @ORM\Column(type="string",length=255, nullable=false)
      */
-    protected $state;
-    
+    protected string $state;
+
     /**
      * Parallel jobs allowed for the client
      *
@@ -134,21 +127,21 @@ class Client
      *     message="Max parallel jobs value must be a positive integer"
      * )
      */
-    protected $maxParallelJobs = 1;
-    
+    protected int $maxParallelJobs = 1;
+
     /**
      * Data generated during the execution
      *
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $data;
+    protected string $data;
 
     /**
      * Get max parallel jobs
      *
      * @return integer
      */
-    public function getMaxParallelJobs()
+    public function getMaxParallelJobs(): int
     {
         return $this->maxParallelJobs;
     }
@@ -157,9 +150,9 @@ class Client
      * Set max parallel jobs
      *
      * @param integer $maxParallelJobs
-     * @return Client
+     * @return void
      */
-    public function setMaxParallelJobs($maxParallelJobs)
+    public function setMaxParallelJobs(int $maxParallelJobs): void
     {
         $this->maxParallelJobs = $maxParallelJobs;
     }
@@ -169,14 +162,14 @@ class Client
      */
     public function __construct()
     {
-        $this->jobs = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->jobs = new ArrayCollection();
         $this->state = "NOT READY";
     }
 
     /**
      * Returns true if the backup directory exists
      */
-    public function hasBackups()
+    public function hasBackups(): bool
     {
         $hasBackups = false;
         $jobs = $this->getJobs();
@@ -184,11 +177,11 @@ class Client
             $backupLocation = $job->getBackupLocation();
             $directory = sprintf('%s/%04d', $backupLocation->getDirectory(), $this->getId());
             if (is_dir($directory)) {
-                $hasBackups  = true;
+                $hasBackups = true;
                 break;
             }
         }
-        
+
         return $hasBackups;
     }
 
@@ -198,7 +191,7 @@ class Client
      * @param string $description
      * @return Client
      */
-    public function setDescription($description)
+    public function setDescription(string $description): Client
     {
         $this->description = $description;
 
@@ -210,7 +203,7 @@ class Client
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -220,7 +213,7 @@ class Client
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -231,7 +224,7 @@ class Client
      * @param string $name
      * @return Client
      */
-    public function setName($name)
+    public function setName(string $name): Client
     {
         $this->name = $name;
 
@@ -243,7 +236,7 @@ class Client
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -252,11 +245,11 @@ class Client
      * Set url
      *
      * @param string $url
-     * @return Job
+     * @return Client
      */
-    public function setUrl($url)
+    public function setUrl(string $url): Client
     {
-        if (isset($url)) {
+        if ($url != null) {
             $this->url = $url;
         } else {
             $this->url = '';
@@ -270,7 +263,7 @@ class Client
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -278,10 +271,10 @@ class Client
     /**
      * Add jobs
      *
-     * @param App\Entity\Job $jobs
+     * @param Job $jobs
      * @return Client
      */
-    public function addJob(\App\Entity\Job $jobs)
+    public function addJob(Job $jobs): Client
     {
         $this->jobs[] = $jobs;
 
@@ -291,9 +284,9 @@ class Client
     /**
      * Remove jobs
      *
-     * @param App\Entity\Job $jobs
+     * @param Job $jobs
      */
-    public function removeJob(\App\Entity\Job $jobs)
+    public function removeJob(Job $jobs): void
     {
         $this->jobs->removeElement($jobs);
     }
@@ -301,9 +294,9 @@ class Client
     /**
      * Get jobs
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getJobs()
+    public function getJobs(): Collection
     {
         return $this->jobs;
     }
@@ -314,7 +307,7 @@ class Client
      * @param boolean $isActive
      * @return Client
      */
-    public function setIsActive($isActive)
+    public function setIsActive(bool $isActive): Client
     {
         $this->isActive = $isActive;
 
@@ -326,7 +319,7 @@ class Client
      *
      * @return boolean
      */
-    public function getIsActive()
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }
@@ -334,10 +327,10 @@ class Client
     /**
      * Set LogEntry
      *
-     * @param LogRecord $LogEntry
+     * @param LogRecord|null $logEntry
      * @return Client
      */
-    public function setLogEntry(LogRecord $logEntry = null)
+    public function setLogEntry(LogRecord $logEntry = null): static
     {
         $this->logEntry = $logEntry;
 
@@ -347,9 +340,9 @@ class Client
     /**
      * Get LogEntry
      *
-     * @return LogRecord
+     * @return LogRecord|null
      */
-    public function getLogEntry()
+    public function getLogEntry(): ?LogRecord
     {
         return $this->logEntry;
     }
@@ -357,9 +350,9 @@ class Client
     /**
      * Get diskUsage
      *
-     * @return bigint
+     * @return int
      */
-    public function getDiskUsage()
+    public function getDiskUsage(): int
     {
         $du = 0;
         foreach ($this->jobs as $job) {
@@ -371,10 +364,10 @@ class Client
     /**
      * Set quota
      *
-     * @param bigint $quota
+     * @param int $quota
      * @return Client
      */
-    public function setQuota($quota)
+    public function setQuota(int $quota): Client
     {
         $this->quota = $quota;
         return $this;
@@ -383,9 +376,9 @@ class Client
     /**
      * Get quota
      *
-     * @return bigint
+     * @return int
      */
-    public function getQuota()
+    public function getQuota(): int
     {
         return $this->quota;
     }
@@ -393,10 +386,10 @@ class Client
     /**
      * Add postScripts
      *
-     * @param App\Entity\Script $postScripts
+     * @param Script $postScripts
      * @return Client
      */
-    public function addPostScript(Script $postScripts)
+    public function addPostScript(Script $postScripts): Client
     {
         $this->postScripts[] = $postScripts;
         return $this;
@@ -405,9 +398,9 @@ class Client
     /**
      * Remove postScripts
      *
-     * @param App\Entity\Script $postScripts
+     * @param Script $postScripts
      */
-    public function removePostScript(Script $postScripts)
+    public function removePostScript(Script $postScripts): void
     {
         $this->postScripts->removeElement($postScripts);
     }
@@ -415,9 +408,9 @@ class Client
     /**
      * Get postScripts
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getPostScripts()
+    public function getPostScripts(): Collection
     {
         return $this->postScripts;
     }
@@ -425,10 +418,10 @@ class Client
     /**
      * Add preScripts
      *
-     * @param App\Entity\Script $preScripts
+     * @param Script $preScripts
      * @return Client
      */
-    public function addPreScript(Script $preScripts)
+    public function addPreScript(Script $preScripts): Client
     {
         $this->preScripts[] = $preScripts;
         return $this;
@@ -437,9 +430,9 @@ class Client
     /**
      * Remove preScripts
      *
-     * @param App\Entity\Script $preScripts
+     * @param Script $preScripts
      */
-    public function removePreScript(Script $preScripts)
+    public function removePreScript(Script $preScripts): void
     {
         $this->preScripts->removeElement($preScripts);
     }
@@ -447,9 +440,9 @@ class Client
     /**
      * Get preScripts
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getPreScripts()
+    public function getPreScripts(): Collection
     {
         return $this->preScripts;
     }
@@ -457,11 +450,11 @@ class Client
     /**
      * Set owner
      *
-     * @param \App\Entity\User $owner
+     * @param User|null $owner
      *
      * @return Client
      */
-    public function setOwner(\App\Entity\User $owner = null)
+    public function setOwner(User $owner = null): Client
     {
         $this->owner = $owner;
 
@@ -471,9 +464,9 @@ class Client
     /**
      * Get owner
      *
-     * @return \App\Entity\User
+     * @return User
      */
-    public function getOwner()
+    public function getOwner(): User
     {
         return $this->owner;
     }
@@ -481,11 +474,11 @@ class Client
     /**
      * Set sshArgs
      *
-     * @param string $sshArgs
+     * @param string|null $sshArgs
      *
      * @return Client
      */
-    public function setSshArgs($sshArgs = null)
+    public function setSshArgs(string $sshArgs = null): Client
     {
         $this->sshArgs = $sshArgs;
 
@@ -497,7 +490,7 @@ class Client
      *
      * @return string
      */
-    public function getSshArgs()
+    public function getSshArgs(): string
     {
         return $this->sshArgs;
     }
@@ -505,11 +498,11 @@ class Client
     /**
      * Set rsyncShortArgs
      *
-     * @param string $rsyncShortArgs
+     * @param string|null $rsyncShortArgs
      *
      * @return Client
      */
-    public function setRsyncShortArgs($rsyncShortArgs = null)
+    public function setRsyncShortArgs(string $rsyncShortArgs = null): static
     {
         $this->rsyncShortArgs = $rsyncShortArgs;
 
@@ -521,7 +514,7 @@ class Client
      *
      * @return string
      */
-    public function getRsyncShortArgs()
+    public function getRsyncShortArgs(): string
     {
         return $this->rsyncShortArgs;
     }
@@ -529,11 +522,11 @@ class Client
     /**
      * Set rsyncLongArgs
      *
-     * @param string $rsyncLongArgs
+     * @param string|null $rsyncLongArgs
      *
      * @return Client
      */
-    public function setRsyncLongArgs($rsyncLongArgs = null)
+    public function setRsyncLongArgs(string $rsyncLongArgs = null): Client
     {
         $this->rsyncLongArgs = $rsyncLongArgs;
 
@@ -545,52 +538,53 @@ class Client
      *
      * @return string
      */
-    public function getRsyncLongArgs()
+    public function getRsyncLongArgs(): string
     {
         return $this->rsyncLongArgs;
     }
-    
+
     /**
      * Get state
-     * 
+     *
      * @return string
      */
-    public function getState()
+    public function getState(): string
     {
         return $this->state;
     }
-    
+
     /**
      * Set state
      * @param string $state
-     * 
-     * @return Client
+     *
      */
-    public function setState($state)
+    public function setState(string $state): void
     {
         $this->state = $state;
     }
-    
+
     /**
      * Get data
      *
-     * @return array
+     * @return string
      */
-    public function getData()
+    public function getData(): string
     {
-        $decodedData = json_decode($this->data, true);
-        return $decodedData;;
+        return json_decode($this->data, true);
     }
-    
+
     /**
      * Set data
      *
-     * @param array $data
+     * @param string $data
      *
      * @return Client
      */
-    public function setData($data)
+    public function setData(string $data): Client
     {
-        $this->data = json_encode($data);
+        if (!empty($data)) {
+            $this->data = serialize($data);
+        }
+        return $this;
     }
 }

@@ -6,11 +6,7 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Api\Dto\PolicyOutput;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-use \DateTime;
+use DateTime;
 
 /**
  * @ApiResource(
@@ -22,14 +18,14 @@ use \DateTime;
  */
 class Policy
 {
-    private $allRetains = array('Yearly', 'Monthly', 'Weekly', 'Daily', 'Hourly');
+    private array $allRetains = array('Yearly', 'Monthly', 'Weekly', 'Daily', 'Hourly');
 
     /**
-     * Returns the retains that should be run in $time in the right order.
+     * Returns the retains that should run in $time in the right order.
      * @param  DateTime $time
      * @return array of strings
      */
-    public function getRunnableRetains(DateTime $time)
+    public function getRunnableRetains(DateTime $time): array
     {
         $allRetains = $this->allRetains;
         $retains = array();
@@ -56,9 +52,10 @@ class Policy
      * Returns the retains for this Policy in the order they should have in the config file.
      * @return array of array(string, int)
      */
-    public function getRetains()
+    public function getRetains(): array
     {
         $allRetains = $this->allRetains;
+        $retains[] = array();
         foreach ($allRetains as $retain) {
             $getCount       = "get{$retain}Count";
             if ($this->$getCount() != 0) {
@@ -73,7 +70,7 @@ class Policy
      * Returns true if $retain only rotates the backups and doesn't
      * try to fetch data from the client.
      */
-    public function isRotation($retain)
+    public function isRotation($retain): bool
     {
         $retains = $this->getRetains();
         return !(count($retains) && $retains[0][0] == $retain);
@@ -82,15 +79,15 @@ class Policy
     /**
      * @Assert\IsTrue(message = "You forgot to specify hours during the day")
      */
-    public function isHourlyHoursValid()
+    public function isHourlyHoursValid(): bool
     {
         return empty($this->hourlyCount) || !empty($this->hourlyHours);
     }
 
     /**
-     * Returns true if running the retain $retain requires a previous sync operation
+     * True if running the retain $retain requires a previous sync
      */
-    public function mustSync($retain)
+    public function mustSync($retain): bool
     {
         $retains = $this->getRetains();
         return $this->getSyncFirst() && count($retains) && $retains[0][0] == $retain;
@@ -101,185 +98,185 @@ class Policy
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id;
+    protected int $id;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $description;
+    protected string $description;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    protected $name;
+    protected string $name;
 
     /**
-     * Regex to match the time (H:i format in date) for hourly intervals
+     * Regex to match the time (H:i format in date) for hourly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $hourlyHours;
+    protected string $hourlyHours;
 
     /**
-     * Regex to match the day of month (d format in date) for hourly intervals
+     * Regex to match the day of month (d format in date) for hourly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $hourlyDaysOfMonth;
+    protected string $hourlyDaysOfMonth;
 
     /**
-     * Regex to match the day of the week (N format in date) for hourly intervals
+     * Regex to match the day of the week (N format in date) for hourly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $hourlyDaysOfWeek;
+    protected string $hourlyDaysOfWeek;
 
     /**
-     * Regex to match the month (m format in date) for hourly intervals
+     * Regex to match the month (m format in date) for hourly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $hourlyMonths;
+    protected string $hourlyMonths;
 
     /**
-     * Number of retains
+     * Amount retains.
      * @ORM\Column(type="integer")
      */
-    protected $hourlyCount = 0;
+    protected int $hourlyCount = 0;
 
     /**
-     * Regex to match the time (H:i format in date) for daily intervals
+     * Regex to match the time (H:i format in date) for daily intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $dailyHours;
+    protected string $dailyHours;
 
     /**
-     * Regex to match the day of month (d format in date) for daily intervals
+     * Regex to match the day of month (d format in date) for daily intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $dailyDaysOfMonth;
+    protected string $dailyDaysOfMonth;
 
     /**
-     * Regex to match the day of the week (N format in date) for daily intervals
+     * Regex to match the day of the week (N format in date) for daily intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $dailyDaysOfWeek;
+    protected string $dailyDaysOfWeek;
 
     /**
-     * Regex to match the month (m format in date) for daily intervals
+     * Regex to match the month (m format in date) for daily intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $dailyMonths;
+    protected string $dailyMonths;
 
     /**
-     * Number of retains
+     * Amount retains.
      * @ORM\Column(type="integer")
      */
-    protected $dailyCount = 0;
+    protected int $dailyCount = 0;
 
     /**
-     * Regex to match the time (H:i format in date) for weekly intervals
+     * Regex to match the time (H:i format in date) for weekly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $weeklyHours;
+    protected string $weeklyHours;
 
     /**
-     * Regex to match the day of month (d format in date) for weekly intervals
+     * Regex to match the day of month (d format in date) for weekly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $weeklyDaysOfMonth;
+    protected string $weeklyDaysOfMonth;
 
     /**
-     * Regex to match the day of the week (N format in date) for weekly intervals
+     * Regex to match the day of the week (N format in date) for weekly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $weeklyDaysOfWeek;
+    protected string $weeklyDaysOfWeek;
 
     /**
-     * Regex to match the month (m format in date) for weekly intervals
+     * Regex to match the month (m format in date) for weekly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $weeklyMonths;
+    protected string $weeklyMonths;
 
     /**
-     * Number of retains
+     * Amount retains.
      * @ORM\Column(type="integer")
      */
-    protected $weeklyCount = 0;
+    protected int $weeklyCount = 0;
 
     /**
-     * Regex to match the time (H:i format in date) for monthly intervals
+     * Regex to match the time (H:i format in date) for monthly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $monthlyHours;
+    protected string $monthlyHours;
 
     /**
-     * Regex to match the day of month (d format in date) for monthly intervals
+     * Regex to match the day of month (d format in date) for monthly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $monthlyDaysOfMonth;
+    protected string $monthlyDaysOfMonth;
 
     /**
-     * Regex to match the day of the week (N format in date) for monthly intervals
+     * Regex to match the day of the week (N format in date) for monthly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $monthlyDaysOfWeek;
+    protected string $monthlyDaysOfWeek;
 
     /**
-     * Regex to match the month (m format in date) for monthly intervals
+     * Regex to match the month (m format in date) for monthly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $monthlyMonths;
+    protected string $monthlyMonths;
 
     /**
-     * Number of retains
+     * Amount retains
      * @ORM\Column(type="integer")
      */
-    protected $monthlyCount = 0;
+    protected int $monthlyCount = 0;
 
     /**
-     * Regex to match the time (H:i format in date) for yearly intervals
+     * Regex to match the time (H:i format in date) for yearly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $yearlyHours;
+    protected string $yearlyHours;
 
     /**
-     * Regex to match the day of month (d format in date) for yearly intervals
+     * Regex to match the day of month (d format in date) for yearly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $yearlyDaysOfMonth;
+    protected string $yearlyDaysOfMonth;
 
     /**
-     * Regex to match the day of the week (N format in date) for yearly intervals
+     * Regex to match the day of the week (N format in date) for yearly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $yearlyDaysOfWeek;
+    protected string $yearlyDaysOfWeek;
 
     /**
-     * Regex to match the month (m format in date) for yearly intervals
+     * Regex to match the month (m format in date) for yearly intervals.
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    protected $yearlyMonths;
+    protected string $yearlyMonths;
 
     /**
-     * Number of retains
+     * Amount retains
      * @ORM\Column(type="integer")
      */
-    protected $yearlyCount = 0;
+    protected int $yearlyCount = 0;
 
     /**
      * Include expressions
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $include;
+    protected string $include;
 
     /**
      * Exclude expressions
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $exclude;
+    protected string $exclude;
 
     /**
      * Whether to use rsnapshot sync_first option
      * @ORM\Column(type="boolean")
      */
-    protected $syncFirst;
+    protected bool $syncFirst;
 
     /**
      * Constructor
@@ -294,7 +291,7 @@ class Policy
      * @param string $description
      * @return Policy
      */
-    public function setDescription($description)
+    public function setDescription(string $description): static
     {
         $this->description = $description;
 
@@ -306,7 +303,7 @@ class Policy
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -316,7 +313,7 @@ class Policy
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -325,13 +322,10 @@ class Policy
      * Set name
      *
      * @param string $name
-     * @return Policy
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     /**
@@ -339,7 +333,7 @@ class Policy
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -351,7 +345,7 @@ class Policy
      * @param string $hourlyHours
      * @return Policy
      */
-    public function setHourlyHours($hourlyHours)
+    public function setHourlyHours(string $hourlyHours): static
     {
         $this->hourlyHours = $hourlyHours;
 
@@ -363,7 +357,7 @@ class Policy
      *
      * @return string
      */
-    public function getHourlyHours()
+    public function getHourlyHours(): string
     {
         return $this->hourlyHours;
     }
@@ -374,7 +368,7 @@ class Policy
      * @param string $hourlyDaysOfMonth
      * @return Policy
      */
-    public function setHourlyDaysOfMonth($hourlyDaysOfMonth)
+    public function setHourlyDaysOfMonth(string $hourlyDaysOfMonth): static
     {
         $this->hourlyDaysOfMonth = $hourlyDaysOfMonth;
 
@@ -386,7 +380,7 @@ class Policy
      *
      * @return string
      */
-    public function getHourlyDaysOfMonth()
+    public function getHourlyDaysOfMonth(): string
     {
         return $this->hourlyDaysOfMonth;
     }
@@ -397,7 +391,7 @@ class Policy
      * @param string $hourlyDaysOfWeek
      * @return Policy
      */
-    public function setHourlyDaysOfWeek($hourlyDaysOfWeek)
+    public function setHourlyDaysOfWeek(string $hourlyDaysOfWeek): static
     {
         $this->hourlyDaysOfWeek = $hourlyDaysOfWeek;
 
@@ -409,7 +403,7 @@ class Policy
      *
      * @return string
      */
-    public function getHourlyDaysOfWeek()
+    public function getHourlyDaysOfWeek(): string
     {
         return $this->hourlyDaysOfWeek;
     }
@@ -420,7 +414,7 @@ class Policy
      * @param string $hourlyMonths
      * @return Policy
      */
-    public function setHourlyMonths($hourlyMonths)
+    public function setHourlyMonths(string $hourlyMonths): static
     {
         $this->hourlyMonths = $hourlyMonths;
 
@@ -432,7 +426,7 @@ class Policy
      *
      * @return string
      */
-    public function getHourlyMonths()
+    public function getHourlyMonths(): string
     {
         return $this->hourlyMonths;
     }
@@ -443,7 +437,7 @@ class Policy
      * @param integer $hourlyCount
      * @return Policy
      */
-    public function setHourlyCount($hourlyCount)
+    public function setHourlyCount(int $hourlyCount): static
     {
         $this->hourlyCount = $hourlyCount;
 
@@ -455,7 +449,7 @@ class Policy
      *
      * @return integer
      */
-    public function getHourlyCount()
+    public function getHourlyCount(): int
     {
         return $this->hourlyCount;
     }
@@ -466,7 +460,7 @@ class Policy
      * @param string $dailyHours
      * @return Policy
      */
-    public function setDailyHours($dailyHours)
+    public function setDailyHours(string $dailyHours): static
     {
         $this->dailyHours = $dailyHours;
 
@@ -478,7 +472,7 @@ class Policy
      *
      * @return string
      */
-    public function getDailyHours()
+    public function getDailyHours(): string
     {
         return $this->dailyHours;
     }
@@ -489,7 +483,7 @@ class Policy
      * @param string $dailyDaysOfMonth
      * @return Policy
      */
-    public function setDailyDaysOfMonth($dailyDaysOfMonth)
+    public function setDailyDaysOfMonth(string $dailyDaysOfMonth): static
     {
         $this->dailyDaysOfMonth = $dailyDaysOfMonth;
 
@@ -501,7 +495,7 @@ class Policy
      *
      * @return string
      */
-    public function getDailyDaysOfMonth()
+    public function getDailyDaysOfMonth(): string
     {
         return $this->dailyDaysOfMonth;
     }
@@ -512,7 +506,7 @@ class Policy
      * @param string $dailyDaysOfWeek
      * @return Policy
      */
-    public function setDailyDaysOfWeek($dailyDaysOfWeek)
+    public function setDailyDaysOfWeek(string $dailyDaysOfWeek): static
     {
         $this->dailyDaysOfWeek = $dailyDaysOfWeek;
 
@@ -524,7 +518,7 @@ class Policy
      *
      * @return string
      */
-    public function getDailyDaysOfWeek()
+    public function getDailyDaysOfWeek(): string
     {
         return $this->dailyDaysOfWeek;
     }
@@ -535,7 +529,7 @@ class Policy
      * @param string $dailyMonths
      * @return Policy
      */
-    public function setDailyMonths($dailyMonths)
+    public function setDailyMonths(string $dailyMonths): static
     {
         $this->dailyMonths = $dailyMonths;
 
@@ -547,7 +541,7 @@ class Policy
      *
      * @return string
      */
-    public function getDailyMonths()
+    public function getDailyMonths(): string
     {
         return $this->dailyMonths;
     }
@@ -558,7 +552,7 @@ class Policy
      * @param integer $dailyCount
      * @return Policy
      */
-    public function setDailyCount($dailyCount)
+    public function setDailyCount(int $dailyCount): static
     {
         $this->dailyCount = $dailyCount;
 
@@ -570,7 +564,7 @@ class Policy
      *
      * @return integer
      */
-    public function getDailyCount()
+    public function getDailyCount(): int
     {
         return $this->dailyCount;
     }
@@ -581,7 +575,7 @@ class Policy
      * @param string $weeklyHours
      * @return Policy
      */
-    public function setWeeklyHours($weeklyHours)
+    public function setWeeklyHours(string $weeklyHours): static
     {
         $this->weeklyHours = $weeklyHours;
 
@@ -593,7 +587,7 @@ class Policy
      *
      * @return string
      */
-    public function getWeeklyHours()
+    public function getWeeklyHours(): string
     {
         return $this->weeklyHours;
     }
@@ -604,7 +598,7 @@ class Policy
      * @param string $weeklyDaysOfMonth
      * @return Policy
      */
-    public function setWeeklyDaysOfMonth($weeklyDaysOfMonth)
+    public function setWeeklyDaysOfMonth(string $weeklyDaysOfMonth): static
     {
         $this->weeklyDaysOfMonth = $weeklyDaysOfMonth;
 
@@ -616,7 +610,7 @@ class Policy
      *
      * @return string
      */
-    public function getWeeklyDaysOfMonth()
+    public function getWeeklyDaysOfMonth(): string
     {
         return $this->weeklyDaysOfMonth;
     }
@@ -627,7 +621,7 @@ class Policy
      * @param string $weeklyDaysOfWeek
      * @return Policy
      */
-    public function setWeeklyDaysOfWeek($weeklyDaysOfWeek)
+    public function setWeeklyDaysOfWeek(string $weeklyDaysOfWeek): static
     {
         $this->weeklyDaysOfWeek = $weeklyDaysOfWeek;
 
@@ -639,7 +633,7 @@ class Policy
      *
      * @return string
      */
-    public function getWeeklyDaysOfWeek()
+    public function getWeeklyDaysOfWeek(): string
     {
         return $this->weeklyDaysOfWeek;
     }
@@ -650,7 +644,7 @@ class Policy
      * @param string $weeklyMonths
      * @return Policy
      */
-    public function setWeeklyMonths($weeklyMonths)
+    public function setWeeklyMonths(string $weeklyMonths): static
     {
         $this->weeklyMonths = $weeklyMonths;
 
@@ -662,7 +656,7 @@ class Policy
      *
      * @return string
      */
-    public function getWeeklyMonths()
+    public function getWeeklyMonths(): string
     {
         return $this->weeklyMonths;
     }
@@ -673,9 +667,9 @@ class Policy
      * @param integer $weeklyCount
      * @return Policy
      */
-    public function setWeeklyCount($weeklyCount)
+    public function setWeeklyCount(int $weeklyCount): static
     {
-        $this->weeklyCount = (int)$weeklyCount;
+        $this->weeklyCount = $weeklyCount;
 
         return $this;
     }
@@ -685,7 +679,7 @@ class Policy
      *
      * @return integer
      */
-    public function getWeeklyCount()
+    public function getWeeklyCount(): int
     {
         return $this->weeklyCount;
     }
@@ -696,7 +690,7 @@ class Policy
      * @param string $monthlyHours
      * @return Policy
      */
-    public function setMonthlyHours($monthlyHours)
+    public function setMonthlyHours(string $monthlyHours): static
     {
         $this->monthlyHours = $monthlyHours;
 
@@ -708,7 +702,7 @@ class Policy
      *
      * @return string
      */
-    public function getMonthlyHours()
+    public function getMonthlyHours(): string
     {
         return $this->monthlyHours;
     }
@@ -719,7 +713,7 @@ class Policy
      * @param string $monthlyDaysOfMonth
      * @return Policy
      */
-    public function setMonthlyDaysOfMonth($monthlyDaysOfMonth)
+    public function setMonthlyDaysOfMonth(string $monthlyDaysOfMonth): static
     {
         $this->monthlyDaysOfMonth = $monthlyDaysOfMonth;
 
@@ -731,7 +725,7 @@ class Policy
      *
      * @return string
      */
-    public function getMonthlyDaysOfMonth()
+    public function getMonthlyDaysOfMonth(): string
     {
         return $this->monthlyDaysOfMonth;
     }
@@ -742,7 +736,7 @@ class Policy
      * @param string $monthlyDaysOfWeek
      * @return Policy
      */
-    public function setMonthlyDaysOfWeek($monthlyDaysOfWeek)
+    public function setMonthlyDaysOfWeek(string $monthlyDaysOfWeek): static
     {
         $this->monthlyDaysOfWeek = $monthlyDaysOfWeek;
 
@@ -754,7 +748,7 @@ class Policy
      *
      * @return string
      */
-    public function getMonthlyDaysOfWeek()
+    public function getMonthlyDaysOfWeek(): string
     {
         return $this->monthlyDaysOfWeek;
     }
@@ -765,7 +759,7 @@ class Policy
      * @param string $monthlyMonths
      * @return Policy
      */
-    public function setMonthlyMonths($monthlyMonths)
+    public function setMonthlyMonths(string $monthlyMonths): static
     {
         $this->monthlyMonths = $monthlyMonths;
 
@@ -777,7 +771,7 @@ class Policy
      *
      * @return string
      */
-    public function getMonthlyMonths()
+    public function getMonthlyMonths(): string
     {
         return $this->monthlyMonths;
     }
@@ -788,9 +782,9 @@ class Policy
      * @param integer $monthlyCount
      * @return Policy
      */
-    public function setMonthlyCount($monthlyCount)
+    public function setMonthlyCount(int $monthlyCount): static
     {
-        $this->monthlyCount = (int)$monthlyCount;
+        $this->monthlyCount = $monthlyCount;
 
         return $this;
     }
@@ -800,7 +794,7 @@ class Policy
      *
      * @return integer
      */
-    public function getMonthlyCount()
+    public function getMonthlyCount(): int
     {
         return $this->monthlyCount;
     }
@@ -811,7 +805,7 @@ class Policy
      * @param string $yearlyHours
      * @return Policy
      */
-    public function setYearlyHours($yearlyHours)
+    public function setYearlyHours(string $yearlyHours): static
     {
         $this->yearlyHours = $yearlyHours;
 
@@ -823,7 +817,7 @@ class Policy
      *
      * @return string
      */
-    public function getYearlyHours()
+    public function getYearlyHours(): string
     {
         return $this->yearlyHours;
     }
@@ -834,7 +828,7 @@ class Policy
      * @param string $yearlyDaysOfMonth
      * @return Policy
      */
-    public function setYearlyDaysOfMonth($yearlyDaysOfMonth)
+    public function setYearlyDaysOfMonth(string $yearlyDaysOfMonth): static
     {
         $this->yearlyDaysOfMonth = $yearlyDaysOfMonth;
 
@@ -846,7 +840,7 @@ class Policy
      *
      * @return string
      */
-    public function getYearlyDaysOfMonth()
+    public function getYearlyDaysOfMonth(): string
     {
         return $this->yearlyDaysOfMonth;
     }
@@ -857,7 +851,7 @@ class Policy
      * @param string $yearlyDaysOfWeek
      * @return Policy
      */
-    public function setYearlyDaysOfWeek($yearlyDaysOfWeek)
+    public function setYearlyDaysOfWeek(string $yearlyDaysOfWeek): static
     {
         $this->yearlyDaysOfWeek = $yearlyDaysOfWeek;
 
@@ -869,7 +863,7 @@ class Policy
      *
      * @return string
      */
-    public function getYearlyDaysOfWeek()
+    public function getYearlyDaysOfWeek(): string
     {
         return $this->yearlyDaysOfWeek;
     }
@@ -880,7 +874,7 @@ class Policy
      * @param string $yearlyMonths
      * @return Policy
      */
-    public function setYearlyMonths($yearlyMonths)
+    public function setYearlyMonths(string $yearlyMonths): static
     {
         $this->yearlyMonths = $yearlyMonths;
 
@@ -892,7 +886,7 @@ class Policy
      *
      * @return string
      */
-    public function getYearlyMonths()
+    public function getYearlyMonths(): string
     {
         return $this->yearlyMonths;
     }
@@ -903,9 +897,9 @@ class Policy
      * @param integer $yearlyCount
      * @return Policy
      */
-    public function setYearlyCount($yearlyCount)
+    public function setYearlyCount(int $yearlyCount): static
     {
-        $this->yearlyCount = (int)$yearlyCount;
+        $this->yearlyCount = $yearlyCount;
 
         return $this;
     }
@@ -915,7 +909,7 @@ class Policy
      *
      * @return integer
      */
-    public function getYearlyCount()
+    public function getYearlyCount(): int
     {
         return $this->yearlyCount;
     }
@@ -926,7 +920,7 @@ class Policy
      * @param string $include
      * @return Policy
      */
-    public function setInclude($include)
+    public function setInclude(string $include): static
     {
         $this->include = $include;
 
@@ -938,7 +932,7 @@ class Policy
      *
      * @return string
      */
-    public function getInclude()
+    public function getInclude(): string
     {
         return $this->include;
     }
@@ -949,7 +943,7 @@ class Policy
      * @param string $exclude
      * @return Policy
      */
-    public function setExclude($exclude)
+    public function setExclude(string $exclude): static
     {
         $this->exclude = $exclude;
 
@@ -961,7 +955,7 @@ class Policy
      *
      * @return string
      */
-    public function getExclude()
+    public function getExclude(): string
     {
         return $this->exclude;
     }
@@ -972,7 +966,7 @@ class Policy
      * @param boolean $syncFirst
      * @return Policy
      */
-    public function setSyncFirst($syncFirst)
+    public function setSyncFirst(bool $syncFirst): static
     {
         $this->syncFirst = $syncFirst;
 
@@ -984,7 +978,7 @@ class Policy
      *
      * @return boolean
      */
-    public function getSyncFirst()
+    public function getSyncFirst(): bool
     {
         return $this->syncFirst;
     }

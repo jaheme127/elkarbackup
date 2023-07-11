@@ -6,12 +6,11 @@
 
 namespace App\Entity;
 
-use \RuntimeException;
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Api\Dto\ScriptOutput;
 use App\Lib\Globals;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
+use DateTime;
+use Doctrine\Common\Collections\Collection;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\File\File;
 
 /**
  * @ApiResource(
@@ -28,26 +27,26 @@ class Script
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $description;
+    protected string $description;
 
     /**
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    protected $id;
+    protected int $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
-    protected $name;
+    protected string $name;
 
-    protected $deleteScriptFile = false;
+    protected bool $deleteScriptFile = false;
 
     /**
      * @Assert\File(maxSize="6000000")
      */
-    protected $scriptFile;
+    protected File $scriptFile;
 
     /**
      * Helper variable to remember the script time for PostRemove actions
@@ -58,59 +57,59 @@ class Script
      * True if can run before the client
      * @ORM\Column(type="boolean")
      */
-    protected $isClientPre;
+    protected bool $isClientPre;
 
     /**
      * True if can run before the job
      * @ORM\Column(type="boolean")
      */
-    protected $isJobPre;
+    protected bool $isJobPre;
 
     /**
      * True if can run after the client
      * @ORM\Column(type="boolean")
      */
-    protected $isClientPost;
+    protected bool $isClientPost;
 
     /**
      * True if can run after the job
      * @ORM\Column(type="boolean")
      */
-    protected $isJobPost;
+    protected bool $isJobPost;
 
 
     /**
      * True if can run after the job
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $lastUpdated;
+    protected Datetime $lastUpdated;
 
     /**
      * @ORM\ManyToMany(targetEntity="Client", mappedBy="postScripts")
      */
-    protected $postClients;
+    protected Collection $postClients;
 
     /**
      * @ORM\ManyToMany(targetEntity="Job", mappedBy="postScripts")
      */
-    protected $postJobs;
+    protected Collection $postJobs;
 
     /**
      * @ORM\ManyToMany(targetEntity="Client", mappedBy="preScripts")
      */
-    protected $preClients;
+    protected Collection $preClients;
 
     /**
      * @ORM\ManyToMany(targetEntity="Job", mappedBy="preScripts")
      */
-    protected $preJobs;
-    
-    private $scriptDirectory;
+    protected Collection $preJobs;
+
+    private mixed $scriptDirectory;
 
     /**
-     * @param mixed $scriptDirectory
+     * @param mixed $scriptDir
      */
-    public function setScriptDirectory($scriptDir)
+    public function setScriptDirectory(mixed $scriptDir): void
     {
         $this->scriptDirectory = $scriptDir;
     }
@@ -127,7 +126,7 @@ class Script
      * @ORM\PostPersist()
      * @ORM\PostUpdate()
      */
-    public function upload()
+    public function upload(): void
     {
         if ($this->scriptFile) {
             if (file_exists($this->getScriptPath()) && !unlink($this->getScriptPath())) {
@@ -147,7 +146,7 @@ class Script
     /**
      * @ORM\PreRemove()
      */
-    public function prepareRemoveUpload()
+    public function prepareRemoveUpload(): void
     {
         $this->filesToRemove = array($this->getScriptPath());
     }
@@ -155,7 +154,7 @@ class Script
     /**
      * @ORM\PostRemove()
      */
-    public function removeUpload()
+    public function removeUpload(): void
     {
         foreach ($this->filesToRemove as $file) {
             if (file_exists($file)) {
@@ -166,7 +165,7 @@ class Script
         }
     }
 
-    public function getScriptPath()
+    public function getScriptPath(): string
     {
         return sprintf('%s/%s', $this->getScriptDirectory(), $this->getScriptName());
     }
@@ -176,7 +175,7 @@ class Script
         return $this->scriptDirectory;
     }
 
-    public function getScriptName()
+    public function getScriptName(): string
     {
         return sprintf('%04d.script', $this->getId());
     }
@@ -187,7 +186,7 @@ class Script
      * @param string $description
      * @return Script
      */
-    public function setDescription($description)
+    public function setDescription(string $description): static
     {
         $this->description = $description;
 
@@ -199,7 +198,7 @@ class Script
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -209,7 +208,7 @@ class Script
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -220,7 +219,7 @@ class Script
      * @param string $name
      * @return Script
      */
-    public function setName($name)
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -232,7 +231,7 @@ class Script
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -240,17 +239,17 @@ class Script
     /**
      * Set scriptFile
      *
-     * @param string $scriptFile
-     * @return Job
+     * @param File $scriptFile
+     * @return Script
      */
-    public function setScriptFile($scriptFile)
+    public function setScriptFile(File $scriptFile): Script
     {
         $this->scriptFile = $scriptFile;
 
         return $this;
     }
 
-    public function getScriptFileExists()
+    public function getScriptFileExists(): bool
     {
         return file_exists($this->getScriptPath());
     }
@@ -260,7 +259,7 @@ class Script
      *
      * @return string
      */
-    public function getScriptFile()
+    public function getScriptFile(): string
     {
         return $this->scriptFile;
     }
@@ -271,7 +270,7 @@ class Script
      * @param boolean $isClientPre
      * @return Script
      */
-    public function setIsClientPre($isClientPre)
+    public function setIsClientPre(bool $isClientPre): static
     {
         $this->isClientPre = $isClientPre;
         return $this;
@@ -282,7 +281,7 @@ class Script
      *
      * @return boolean
      */
-    public function getIsClientPre()
+    public function getIsClientPre(): bool
     {
         return $this->isClientPre;
     }
@@ -293,7 +292,7 @@ class Script
      * @param boolean $isJobPre
      * @return Script
      */
-    public function setIsJobPre($isJobPre)
+    public function setIsJobPre(bool $isJobPre): static
     {
         $this->isJobPre = $isJobPre;
         return $this;
@@ -304,7 +303,7 @@ class Script
      *
      * @return boolean
      */
-    public function getIsJobPre()
+    public function getIsJobPre(): bool
     {
         return $this->isJobPre;
     }
@@ -315,7 +314,7 @@ class Script
      * @param boolean $isClientPost
      * @return Script
      */
-    public function setIsClientPost($isClientPost)
+    public function setIsClientPost(bool $isClientPost): static
     {
         $this->isClientPost = $isClientPost;
         return $this;
@@ -326,7 +325,7 @@ class Script
      *
      * @return boolean
      */
-    public function getIsClientPost()
+    public function getIsClientPost(): bool
     {
         return $this->isClientPost;
     }
@@ -337,7 +336,7 @@ class Script
      * @param boolean $isJobPost
      * @return Script
      */
-    public function setIsJobPost($isJobPost)
+    public function setIsJobPost(bool $isJobPost): static
     {
         $this->isJobPost = $isJobPost;
         return $this;
@@ -348,7 +347,7 @@ class Script
      *
      * @return boolean
      */
-    public function getIsJobPost()
+    public function getIsJobPost(): bool
     {
         return $this->isJobPost;
     }
@@ -356,10 +355,10 @@ class Script
     /**
      * Set lastUpdated
      *
-     * @param datetime
+     * @param DateTime $lastUpdated
      * @return Script
      */
-    public function setLastUpdated($lastUpdated)
+    public function setLastUpdated(DateTime $lastUpdated): static
     {
         $this->lastUpdated = $lastUpdated;
 
@@ -371,7 +370,7 @@ class Script
      *
      * @return datetime
      */
-    public function getLastUpdated()
+    public function getLastUpdated(): DateTime
     {
         return $this->lastUpdated;
     }
@@ -379,10 +378,10 @@ class Script
     /**
      * Add postClients
      *
-     * @param App\Entity\Client $postClients
+     * @param Client $postClients
      * @return Script
      */
-    public function addPostClient(Client $postClients)
+    public function addPostClient(Client $postClients): static
     {
         $this->postClients[] = $postClients;
         return $this;
@@ -391,9 +390,9 @@ class Script
     /**
      * Remove postClients
      *
-     * @param App\Entity\Client $postClients
+     * @param Client $postClients
      */
-    public function removePostClient(Client $postClients)
+    public function removePostClient(Client $postClients): void
     {
         $this->postClients->removeElement($postClients);
     }
@@ -401,9 +400,9 @@ class Script
     /**
      * Get postClients
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getPostClients()
+    public function getPostClients(): Collection
     {
         return $this->postClients;
     }
@@ -411,10 +410,10 @@ class Script
     /**
      * Add postJobs
      *
-     * @param App\Entity\Job $postJobs
+     * @param Job $postJobs
      * @return Script
      */
-    public function addPostJob(Job $postJobs)
+    public function addPostJob(Job $postJobs): static
     {
         $this->postJobs[] = $postJobs;
         return $this;
@@ -423,9 +422,9 @@ class Script
     /**
      * Remove postJobs
      *
-     * @param App\Entity\Job $postJobs
+     * @param Job $postJobs
      */
-    public function removePostJob(Job $postJobs)
+    public function removePostJob(Job $postJobs): void
     {
         $this->postJobs->removeElement($postJobs);
     }
@@ -433,9 +432,9 @@ class Script
     /**
      * Get postJobs
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getPostJobs()
+    public function getPostJobs(): Collection
     {
         return $this->postJobs;
     }
@@ -443,10 +442,10 @@ class Script
     /**
      * Add preClients
      *
-     * @param App\Entity\Client $preClients
+     * @param Client $preClients
      * @return Script
      */
-    public function addPreClient(Client $preClients)
+    public function addPreClient(Client $preClients): static
     {
         $this->preClients[] = $preClients;
         return $this;
@@ -455,9 +454,9 @@ class Script
     /**
      * Remove preClients
      *
-     * @param App\Entity\Client $preClients
+     * @param Client $preClients
      */
-    public function removePreClient(Client $preClients)
+    public function removePreClient(Client $preClients): void
     {
         $this->preClients->removeElement($preClients);
     }
@@ -465,9 +464,9 @@ class Script
     /**
      * Get preClients
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getPreClients()
+    public function getPreClients(): Collection
     {
         return $this->preClients;
     }
@@ -475,10 +474,10 @@ class Script
     /**
      * Add preJobs
      *
-     * @param App\Entity\Job $preJobs
+     * @param Job $preJobs
      * @return Script
      */
-    public function addPreJob(Job $preJobs)
+    public function addPreJob(Job $preJobs): static
     {
         $this->preJobs[] = $preJobs;
         return $this;
@@ -487,9 +486,9 @@ class Script
     /**
      * Remove preJobs
      *
-     * @param App\Entity\Job $preJobs
+     * @param Job $preJobs
      */
-    public function removePreJob(Job $preJobs)
+    public function removePreJob(Job $preJobs): void
     {
         $this->preJobs->removeElement($preJobs);
     }
@@ -497,23 +496,23 @@ class Script
     /**
      * Get preJobs
      *
-     * @return Doctrine\Common\Collections\Collection
+     * @return Collection
      */
-    public function getPreJobs()
+    public function getPreJobs(): Collection
     {
         return $this->preJobs;
     }
 
-    public function isUsed()
+    public function isUsed(): bool
     {
         $postClients = $this->getPostClients();
-        $postJobs    = $this->getPostJobs();
-        $preClients  = $this->getPreClients();
-        $preJobs     = $this->getPreJobs();
+        $postJobs = $this->getPostJobs();
+        $preClients = $this->getPreClients();
+        $preJobs = $this->getPreJobs();
 
-        return !empty($postClients) && $postClients->count() != 0 ||
-               !empty($postJobs)    && $postJobs->count()    != 0 ||
-               !empty($preClients)  && $preClients->count()  != 0 ||
-               !empty($preJobs)     && $preJobs->count()     != 0;
+        return $postClients->count() != 0 ||
+            $postJobs->count() != 0 ||
+            $preClients->count() != 0 ||
+            $preJobs->count() != 0;
     }
 }

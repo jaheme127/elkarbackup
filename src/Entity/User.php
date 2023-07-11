@@ -6,13 +6,7 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Api\Dto\UserOutput;
-use App\Lib\Globals;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
-use Symfony\Component\Security\Core\Validator\Constraint as SecurityAssert;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ApiResource(
@@ -22,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  * @ORM\Entity
  */
-class User implements AdvancedUserInterface
+class User
 {
     const SUPERUSER_ID = 1;
     /**
@@ -30,38 +24,38 @@ class User implements AdvancedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string", length=25, unique=true)
      */
-    private $username;
+    private string $username;
 
     /**
      * @ORM\Column(type="string", length=32)
      */
-    private $salt;
+    private string $salt;
 
     /**
      * @ORM\Column(type="string", length=100)
      */
-    private $password;
-    public $newPassword;
+    private string $password;
+    public string $newPassword;
 
     /**
      * @ORM\Column(type="string", length=60, unique=false)
      */
-    private $email;
+    private string $email;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isActive;
+    private bool $isActive;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $roles;
+    private string $roles;
 
     /**
      * @ORM\Column(type="string", length=25)
@@ -71,13 +65,13 @@ class User implements AdvancedUserInterface
      *    message = " a valid language"
      * )
      */
-    private $language = 'en';
+    private string $language = 'en';
 
     /**
-      * @ORM\Column(type="integer")
-      * @Assert\NotBlank(groups={"preferences"})
-      */
-    private $linesperpage = 20;
+     * @ORM\Column(type="integer")
+     * @Assert\NotBlank(groups={"preferences"})
+     */
+    private int $linesPerPage = 20;
 
     public function __construct()
     {
@@ -85,75 +79,57 @@ class User implements AdvancedUserInterface
         $this->salt = md5(uniqid(null, true));
     }
 
-    public function isAccountNonExpired()
+    public function isAccountNonExpired(): bool
     {
         return true;
     }
 
-    public function isAccountNonLocked()
+    public function isAccountNonLocked(): bool
     {
         return true;
     }
 
-    public function isCredentialsNonExpired()
+    public function isCredentialsNonExpired(): bool
     {
         return true;
     }
 
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return $this->isActive;
     }
 
-    public function isSuperuser()
+    public function isSuperuser(): bool
     {
         return $this->id == self::SUPERUSER_ID;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getUsername()
+    public function getUsername(): string
     {
         return $this->username;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getSalt()
+    public function getSalt(): string
     {
         return $this->salt;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getPassword()
+    public function getPassword(): string
     {
         return $this->password;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getRoles()
+    public function getRoles(): array
     {
         return explode(',', $this->roles);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setRoles(array $roles)
+    public function setRoles(array $roles): static
     {
         $this->roles = implode(',', $roles);
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function eraseCredentials()
     {
     }
@@ -163,7 +139,7 @@ class User implements AdvancedUserInterface
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -174,7 +150,7 @@ class User implements AdvancedUserInterface
      * @param string $salt
      * @return User
      */
-    public function setSalt($salt)
+    public function setSalt(string $salt): static
     {
         $this->salt = $salt;
 
@@ -187,7 +163,7 @@ class User implements AdvancedUserInterface
      * @param string $email
      * @return User
      */
-    public function setEmail($email)
+    public function setEmail(string $email): static
     {
         $this->email = $email;
 
@@ -199,7 +175,7 @@ class User implements AdvancedUserInterface
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -210,7 +186,7 @@ class User implements AdvancedUserInterface
      * @param boolean $isActive
      * @return User
      */
-    public function setIsActive($isActive)
+    public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
 
@@ -222,7 +198,7 @@ class User implements AdvancedUserInterface
      *
      * @return boolean
      */
-    public function getIsActive()
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }
@@ -233,7 +209,7 @@ class User implements AdvancedUserInterface
      * @param string $username
      * @return User
      */
-    public function setUsername($username)
+    public function setUsername(string $username): static
     {
         $this->username = $username;
 
@@ -246,7 +222,7 @@ class User implements AdvancedUserInterface
      * @param string $password
      * @return User
      */
-    public function setPassword($password)
+    public function setPassword(string $password): static
     {
         $this->password = $password;
 
@@ -259,7 +235,7 @@ class User implements AdvancedUserInterface
      * @param string $language
      * @return User
      */
-    public function setLanguage($language)
+    public function setLanguage(string $language): static
     {
         $this->language = $language;
 
@@ -271,31 +247,31 @@ class User implements AdvancedUserInterface
      *
      * @return string
      */
-    public function getLanguage()
+    public function getLanguage(): string
     {
         return $this->language;
     }
 
     /**
-     * Set linesperpage
+     * Set linesPerPage
      *
-     * @param integer $linesperpage
+     * @param integer $linesPerPage
      * @return User
      */
-    public function setLinesperpage($linesperpage)
+    public function setLinesPerPage(int $linesPerPage): static
     {
-        $this->linesperpage = $linesperpage;
+        $this->linesPerPage = $linesPerPage;
 
         return $this;
     }
 
     /**
-     * Get linesperpage
+     * Get linesPerPage
      *
      * @return integer
      */
-    public function getLinesperpage()
+    public function getLinesPerPage(): int
     {
-        return $this->linesperpage;
+        return $this->linesPerPage;
     }
 }

@@ -1,10 +1,10 @@
 <?php
+
 namespace App\Api\Filter;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class ClientByNameFilter
@@ -12,21 +12,21 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class ClientByNameFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null)
+    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, $operation = null, array $context = []): void
     {
-        if ($property === 'name'){
+        if ($property === 'name') {
             $parameterName = $queryNameGenerator->generateParameterName($property);
             $queryBuilder->andWhere(sprintf('c.%s = :%s', $property, $parameterName));
             $queryBuilder->setParameter($parameterName, $value);
         }
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function getDescription(string $resourceClass): array
     {
-        $description['name']= [
+        $description['name'] = [
             'property' => 'name',
             'type' => 'string',
             'required' => false,
@@ -34,7 +34,7 @@ class ClientByNameFilter extends AbstractFilter
                 'description' => 'Filter client by name',
             ],
         ];
-        
+
         return $description;
     }
 }

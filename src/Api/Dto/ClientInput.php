@@ -1,23 +1,22 @@
 <?php
-namespace App\Api\Dto;
 
-use Symfony\Component\Cache\Adapter\NullAdapter;
+namespace App\Api\Dto;
 
 class ClientInput
 {
-    private $description;
-    private $id;
-    private $isActive = true;
-    private $maxParallelJobs = 1;
-    private $name;
-    private $owner;
-    private $postScripts = [];
-    private $preScripts = [];
-    private $quota = -1;
-    private $rsyncLongArgs;
-    private $rsyncShortArgs;
-    private $sshArgs;
-    private $url;
+    private ?string $description;
+    private int $id;
+    private bool $isActive = true;
+    private int $maxParallelJobs = 1;
+    private string $name;
+    private ?int $owner;
+    private array $postScripts = [];
+    private array $preScripts = [];
+    private int $quota = -1;
+    private ?string $rsyncLongArgs;
+    private ?string $rsyncShortArgs;
+    private ?string $sshArgs;
+    private ?string $url;
 
     /**
      * @return string|null
@@ -60,7 +59,7 @@ class ClientInput
     }
 
     /**
-     * @return integer
+     * @return int|null
      */
     public function getOwner(): ?int
     {
@@ -85,8 +84,8 @@ class ClientInput
 
     /**
      * Quota given in MiB
-     * 
-     * @return integer
+     *
+     * @return int
      */
     public function getQuota(): int
     {
@@ -148,6 +147,7 @@ class ClientInput
     {
         $this->maxParallelJobs = $maxParallelJobs;
     }
+
     /**
      * @param string $name
      */

@@ -3,6 +3,7 @@
  * @copyright 2012,2013 Binovo it Human Project, S.L.
  * @license http://www.opensource.org/licenses/bsd-license.php New-BSD
  */
+
 namespace App\Controller;
 
 use \DateTime;
@@ -35,9 +36,8 @@ use App\Service\LoggerService;
 use App\Service\RouterService;
 use App\Service\TranslatorService;
 use Knp\Component\Pager\PaginatorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,65 +51,65 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\PercentType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use steevanb\SSH2Bundle\Entity\Profile;
-use steevanb\SSH2Bundle\Entity\Connection;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
-use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\HttpKernel\CacheClearer\ChainCacheClearer;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DefaultController extends AbstractController
 {
-    private $kernel;
-    private $security;
-    private $translator;
-    private $translatorService;
-    private $logger;
-    private $router;
-    private $supportedLocales;
-    private $paginator;
-    private $encoderFactory;
+    private KernelInterface $kernel;
+    private Security $security;
+    private TranslatorInterface $translator;
+    private TranslatorService $translatorService;
+    private LoggerService $logger;
+    private RouterService $router;
+    private PaginatorInterface $paginator;
+    private PasswordHasherFactoryInterface $encoderFactory;
     private $uploadDir;
+    private ManagerRegistry $doctrine;
 
-    public function __construct($uploadDir, Security $security, TranslatorInterface $t, TranslatorService $translatorService, LoggerService $logger, RouterService $router, PaginatorInterface $pag, KernelInterface $kernel, EncoderFactoryInterface $encoder)
+    public function __construct($uploadDir, Security $security, TranslatorInterface $t, TranslatorService $translatorService, LoggerService $logger, RouterService $router, PaginatorInterface $pag, KernelInterface $kernel, PasswordHasherFactoryInterface $encoder, ManagerRegistry $doctrine)
     {
-        $this->kernel            = $kernel;
-        $this->security          = $security;
-        $this->translator        = $t;
+        $this->kernel = $kernel;
+        $this->security = $security;
+        $this->translator = $t;
         $this->translatorService = $translatorService;
-        $this->logger            = $logger;
-        $this->router            = $router;
-        $this->paginator         = $pag;
-        $this->encoderFactory    = $encoder;
-        $this->uploadDir         = $uploadDir;
+        $this->logger = $logger;
+        $this->router = $router;
+        $this->paginator = $pag;
+        $this->encoderFactory = $encoder;
+        $this->uploadDir = $uploadDir;
+        $this->doctrine = $doctrine;
     }
 
     /*
      * Checks if autofs is installed and the builtin -hosts map activated
      */
-    protected function isAutoFsAvailable()
+    protected function isAutoFsAvailable(): bool
     {
         $result = false;
-        if (! file_exists('/etc/auto.master')) {
+        if (!file_exists('/etc/auto.master')) {
             return false;
         }
         $file = fopen('/etc/auto.master', 'r');
-        if (! $file) {
+        if (!$file) {
             return false;
         }
         while ($line = fgets($file)) {
@@ -125,7 +125,7 @@ class DefaultController extends AbstractController
     /**
      * Should be called after making changes to any of the parameters to make the changes effective.
      */
-    protected function clearCache()
+    protected function clearCache(): void
     {
         try {
             $commandAndParams = [
@@ -142,7 +142,7 @@ class DefaultController extends AbstractController
                 $this->logger->err('Command failure: ' . $commandAndParams['command']);
             }
             // UGLY and NOT TOTALLY CORRECT
-            // We have to sleep after clearing the cache, beause otherwise
+            // We have to sleep after clearing the cache, because otherwise
             // subsequent calls (i.e. a redirect) won't load the correct data.
             // See https://github.com/elkarbackup/elkarbackup/pull/553
             // 2s seems an "always works" value in my dev environment
@@ -158,7 +158,7 @@ class DefaultController extends AbstractController
      * @Route("/about", name="about")
      * @Template()
      */
-    public function aboutAction(Request $request)
+    public function aboutAction(Request $request): Response
     {
         return $this->render('default/about.html.twig');
     }
@@ -167,7 +167,7 @@ class DefaultController extends AbstractController
      * @Route("/config/publickey/get", name="downloadPublicKey")
      * @Template()
      */
-    public function downloadPublicKeyAction(Request $request)
+    public function downloadPublicKeyAction(Request $request): Response
     {
         if (!file_exists($this->getParameter('public_key'))) {
             throw $this->createNotFoundException(
@@ -176,9 +176,9 @@ class DefaultController extends AbstractController
         }
         $headers = array(
             'Content-Type' => 'text/plain',
-            'Content-Disposition' => sprintf('attachment; filename="Publickey.pub"')
+            'Content-Disposition' => sprintf('attachment; filename="id_rsa.pub"')
         );
-        
+
         return new Response(file_get_contents(
             $this->getParameter('public_key')),
             200,
@@ -192,36 +192,36 @@ class DefaultController extends AbstractController
     public function generatePublicKeyAction(Request $request)
     {
         $t = $this->translator;
-        $db = $this->getDoctrine();
+        $db = $this->doctrine;
         $manager = $db->getManager();
         $msg = new Message(
-            'DefaultController', 
-            'TickCommand', 
+            'DefaultController',
+            'TickCommand',
             json_encode(array('command' => "elkarbackup:generate_keypair"))
         );
         $manager->persist($msg);
         $manager->flush();
         $this->logger->info('Public key generation requested');
-        $this->get('session')->getFlashBag()->add(
-            'manageParameters', 
+        $request->getSession()->getFlashBag()->add(
+            'manageParameters',
             $t->trans(
-                'Wait for key generation. It should be available in less than 2 minutes. Check logs if otherwise', 
-                array(), 
+                'Wait for key generation. It should be available in less than 2 minutes. Check logs if otherwise',
+                array(),
                 'BinovoElkarBackup'
             )
         );
-        
+
         return $this->redirect($this->generateUrl('manageParameters'));
     }
 
     /**
      * @Route("/client/{id}/delete", name="deleteClient", methods={"POST"})
      */
-    public function deleteClientAction(Request $request, ClientService $clientService, $id)
+    public function deleteClientAction(Request $request, ClientService $clientService, $id): JsonResponse
     {
         $t = $this->translator;
         try {
-            $repository = $this->getDoctrine()->getRepository('App:Client');
+            $repository = $this->doctrine->getRepository('App:Client');
             $clientName = $repository->find($id)->getName();
             $clientService->delete($id);
             $response = new JsonResponse(array(
@@ -234,7 +234,7 @@ class DefaultController extends AbstractController
                 'action' => 'deleteClientRow',
                 'data' => array($id)
             ));
-        } catch (PermissionException $e){
+        } catch (PermissionException $e) {
             $response = new JsonResponse(array(
                 'error' => false,
                 'msg' => $t->trans(
@@ -251,7 +251,7 @@ class DefaultController extends AbstractController
                 ),
             ));
         }
-        
+
         return $response;
     }
 
@@ -263,7 +263,7 @@ class DefaultController extends AbstractController
         $request = $rs->getCurrentRequest();
         $session = $request->getSession();
         $t = $this->translator;
-        
+
         // get the login error if there is one
         if ($request->attributes->has(Security::AUTHENTICATION_ERROR)) {
             $error = $request->attributes->get(Security::AUTHENTICATION_ERROR);
@@ -284,7 +284,7 @@ class DefaultController extends AbstractController
             );
         }
         $disable_background = $this->getParameter('disable_background');
-        
+
         // Warning for Rsnapshot 1.3.1-4 in Debian Jessie
         $rsnapshot_jessie_md5 = '7d9eb926a1c4d6fcbf81d939d9f400ea';
         if (is_callable('shell_exec') && false === stripos(ini_get('disable_functions'), 'shell_exec')) {
@@ -310,7 +310,7 @@ class DefaultController extends AbstractController
         } else {
             $alert = NULL;
         }
-        
+
         return $this->render(
             'default/login.html.twig',
             array(
@@ -324,7 +324,7 @@ class DefaultController extends AbstractController
     }
 
     /**
-     * @Route("/client/{id}", name="editClient", methods={"GET"}) 
+     * @Route("/client/{id}", name="editClient", methods={"GET"})
      */
     public function editClientAction(Request $request, $id = 'new')
     {
@@ -335,8 +335,8 @@ class DefaultController extends AbstractController
             if ($access == False) {
                 return $this->redirect($this->generateUrl('showClients'));
             }
-            
-            $repository = $this->getDoctrine()->getRepository('App:Client');
+
+            $repository = $this->doctrine->getRepository('App:Client');
             $client = $repository->find($id);
             if (null == $client) {
                 throw $this->createNotFoundException(
@@ -344,7 +344,7 @@ class DefaultController extends AbstractController
                 );
             }
         }
-        
+
         $form = $this->createForm(
             ClientType::class,
             $client,
@@ -355,7 +355,7 @@ class DefaultController extends AbstractController
             array('%clientid%' => $id),
             array('link' => $this->router->generateClientRoute($id))
         );
-        
+
         return $this->render(
             'default/client.html.twig',
             array('form' => $form->createView())
@@ -371,10 +371,10 @@ class DefaultController extends AbstractController
         if ("-1" === $id) {
             $client = new Client();
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:Client');
+            $repository = $this->doctrine->getRepository('App:Client');
             $client = $repository->find($id);
         }
-        
+
         $form = $this->createForm(
             ClientType::class,
             $client,
@@ -385,24 +385,24 @@ class DefaultController extends AbstractController
             $client = $form->getData();
             try {
                 $clientService->save($client);
-                
+
                 return $this->redirect($this->generateUrl('showClients'));
             } catch (Exception $e) {
-                $this->get('session')->getFlashBag()->add(
+                $request->getSession()->getFlashBag()->add(
                     'client',
                     $t->trans('Unable to save your changes: %extrainfo%',
                         array('%extrainfo%' => $e->getMessage()),
                         'BinovoElkarBackup'
                     )
                 );
-                
+
                 return $this->redirect($this->generateUrl(
                     'editClient',
                     array('id' => $client->getId() == null ? 'new' : $client->getId())
                 ));
             }
         } else {
-            
+
             return $this->render(
                 'default/client.html.twig',
                 array('form' => $form->createView())
@@ -416,17 +416,17 @@ class DefaultController extends AbstractController
      */
     public function deleteJobAction(Request $request, JobService $jobService, $idClient, $idJob)
     {
-         $t = $this->translator;
-        
+        $t = $this->translator;
+
         try {
             $jobService->delete($idJob);
             $response = new JsonResponse(array(
                 'error' => false,
                 'msg' => $t->trans(
                     'Client %clientid%, job "%jobid%" deleted successfully.',
-                    array('%clientid%' => $idClient,'%jobid%' => $idJob),
+                    array('%clientid%' => $idClient, '%jobid%' => $idJob),
                     'BinovoElkarBackup'
-                    ),
+                ),
                 'action' => 'deleteJobRow',
                 'data' => array($idJob)
             ));
@@ -450,7 +450,7 @@ class DefaultController extends AbstractController
     {
         if ('new' === $idJob) {
             $job = new Job();
-            $client = $this->getDoctrine()
+            $client = $this->doctrine
                 ->getRepository('App:Client')
                 ->find($idClient);
             if (null == $client) {
@@ -460,7 +460,7 @@ class DefaultController extends AbstractController
         } else {
             $access = $this->checkPermissions($idClient, $idJob);
             if ($access == True) {
-                $job = $this->getDoctrine()
+                $job = $this->doctrine
                     ->getRepository('App:Job')
                     ->find($idJob);
             } else {
@@ -474,25 +474,25 @@ class DefaultController extends AbstractController
         );
         $this->logger->debug(
             'View client %clientid%, job %jobid%',
-            array('%clientid%' => $idClient,'%jobid%' => $idJob),
+            array('%clientid%' => $idClient, '%jobid%' => $idJob),
             array('link' => $this->router->generateJobRoute($idJob, $idClient))
         );
-        
+
         return $this->render(
             'default/job.html.twig',
             array('form' => $form->createView())
         );
     }
-    
+
     /**
      * @Route("/client/{idClient}/job/{idJob}/restore/{idBackupLocation}/{path}", requirements={"idClient" = "\d+", "idJob" = "\d+", "path" = ".*", "idBackupLocation" = "\d+"}, defaults={"path" = "/", "idBackupLocation" = 0}, name="restoreJobBackup", methods={"GET"})
      */
-    public function restoreJobBackupAction(Request $request, $idClient, $idJob, $idBackupLocation, $path)
+    public function restoreJobBackupAction(Request $request, $idClient, $idJob, $idBackupLocation, $path): RedirectResponse|Response
     {
         $user = $this->security->getToken()->getUser();
         $actualuserid = $user->getId();
         $actualusername = $user->getUsername();
-        
+
         $suggestedPath = mb_substr($path, mb_strpos($path, '/'));
         $suggestedPath = mb_substr($suggestedPath, 0, mb_strrpos($suggestedPath, '/'));
 
@@ -500,8 +500,8 @@ class DefaultController extends AbstractController
         if ($access == False) {
 
             $this->logger->err(
-            'Unautorized access attempt by user: %username% into %path% by idclient: %clientid%. / idjob: %jobid%' ,
-            array('%username%' => $actualusername, '%path%' => $path, '%clientid%' => $idClient,'%jobid%' => $idJob )
+                'Unautorized access attempt by user: %username% into %path% by idclient: %clientid%. / idjob: %jobid%',
+                array('%username%' => $actualusername, '%path%' => $path, '%clientid%' => $idClient, '%jobid%' => $idJob)
             );
             return $this->redirect($this->generateUrl('showClients'));
         }
@@ -510,9 +510,9 @@ class DefaultController extends AbstractController
 
         $form = $this->createForm(
             RestoreBackupType::class,
-            array('path' => $suggestedPath,'source' => $path),
+            array('path' => $suggestedPath, 'source' => $path),
             array('translator' => $this->translator, 'actualuserid' => $actualuserid, 'granted' => $granted));
-        return $this->render('default/restorebackup.html.twig',array(
+        return $this->render('default/restorebackup.html.twig', array(
             'form' => $form->createView(),
             'idClient' => $idClient,
             'idJob' => $idJob,
@@ -534,13 +534,13 @@ class DefaultController extends AbstractController
 
         $form = $this->createForm(
             RestoreBackupType::class,
-            array('path' => $suggestedPath,'source' => $path),
+            array('path' => $suggestedPath, 'source' => $path),
             array('translator' => $this->translator, 'actualuserid' => $actualuserid, 'granted' => $granted));
         $form->handleRequest($request);
 
         if (!$form->isSubmitted() || !$form->isValid()) {
-            $this->get('session')->getFlashBag()->add('error',
-            $t->trans('There was an error in your restore backup process', array(), 'BinovoElkarBackup'));
+            $request->getSession()->getFlashBag()->add('error',
+                $t->trans('There was an error in your restore backup process', array(), 'BinovoElkarBackup'));
             return $this->redirect($this->generateUrl('showClients'));
         }
 
@@ -548,16 +548,16 @@ class DefaultController extends AbstractController
         $targetPath = $data['path'];
         $targetIdClient = $data['client'];
 
-        $backupLocation = $this->getDoctrine()->getRepository('App:BackupLocation')->find($idBackupLocation);
+        $backupLocation = $this->doctrine->getRepository('App:BackupLocation')->find($idBackupLocation);
         $sourcePath = sprintf("%s/%s/%s/%s", $backupLocation->getDirectory(), sprintf('%04d', $idClient), sprintf('%04d', $idJob), $path);
 
-        $clientRepo = $this->getDoctrine()
+        $clientRepo = $this->doctrine
             ->getRepository('App:Client');
         $targetClient = $clientRepo->find($targetIdClient);
         $url = $targetClient->getUrl();
         $sshArgs = $targetClient->getSshArgs();
 
-        $manager = $this->getDoctrine()->getManager();
+        $manager = $this->doctrine->getManager();
         $msg = new Message(
             'DefaultController',
             'TickCommand',
@@ -566,7 +566,7 @@ class DefaultController extends AbstractController
                 'url' => $url,
                 'sourcePath' => $sourcePath,
                 'remotePath' => $targetPath,
-                'sshArgs'    => $sshArgs
+                'sshArgs' => $sshArgs
             ))
         );
         $manager->persist($msg);
@@ -576,12 +576,12 @@ class DefaultController extends AbstractController
             array('%clientid%' => $idClient),
             array('link' => $this->router->generateClientRoute($idClient))
         );
-        
-        $this->get('session')->getFlashBag()->add('success',
+
+        $request->getSession()->getFlashBag()->add('success',
             $t->trans('Your backup restore process has been enqueued', array(), 'BinovoElkarBackup'));
         return $this->redirect($this->generateUrl('showClients'));
     }
-    
+
     /**
      * @Route("/client/{idClient}/job/{idJob}/run", requirements={"idClient" = "\d+", "idJob" = "\d+"}, name="enqueueJob", methods={"POST"})
      */
@@ -590,8 +590,8 @@ class DefaultController extends AbstractController
         $t = $this->translator;
         $user = $this->security->getToken();
         $trustable = false;
-        
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+
+        if ($this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
             // Authenticated user
             $trustable = true;
         } else {
@@ -608,12 +608,12 @@ class DefaultController extends AbstractController
                 ));
                 return $response;
             } else {
-                $repository = $this->getDoctrine()->getRepository('App:Job');
+                $repository = $this->doctrine->getRepository("App::Job");
                 $job = $repository->findOneById($idJob);
 
                 $trustable = ($token == $job->getToken());
 
-                if (! $trustable) {
+                if (!$trustable) {
                     $response = new JsonResponse(array(
                         'status' => 'false',
                         'msg' => $t->trans(
@@ -626,25 +626,25 @@ class DefaultController extends AbstractController
                 }
             }
         }
-        
+
         if ($trustable) {
-            if (! isset($job)) {
-                $job = $this->getDoctrine()
+            if (!isset($job)) {
+                $job = $this->doctrine
                     ->getRepository('App:Job')
                     ->find($idJob);
                 if (null == $job) {
                     throw $this->createNotFoundException($this->translatorService->trans('Unable to find Job entity:') . $idJob);
                 }
             }
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->doctrine->getManager();
             $context = array(
                 'link' => $this->router->generateJobRoute($idJob, $idClient),
                 'source' => Globals::STATUS_REPORT
             );
-            $isQueueIn = $this->getDoctrine()
-            ->getRepository('App:Queue')
-            ->findBy(array('job' => $job));
-            if(! $isQueueIn) {
+            $isQueueIn = $this->doctrine
+                ->getRepository('App:Queue')
+                ->findBy(array('job' => $job));
+            if (!$isQueueIn) {
                 $status = 'QUEUED';
                 $queue = new Queue($job);
                 $em->persist($queue);
@@ -655,11 +655,11 @@ class DefaultController extends AbstractController
                         'Job queued successfully. It will start running in less than a minute!',
                         array(),
                         'BinovoElkarBackup'
-                        ),
+                    ),
                     'data' => array($idJob)
                 ));
                 $this->logger->info($status, array(), $context);
-                
+
             } else {
                 $status = 'The job has been already enqueued, it will not be enqueued again';
                 $response = new JsonResponse(array(
@@ -668,7 +668,7 @@ class DefaultController extends AbstractController
                         'One or more jobs were already enqueued, they will not be enqueued again',
                         array(),
                         'BinovoElkarBackup'
-                        ),
+                    ),
                     'data' => array($idJob)
                 ));
                 $this->logger->warn($status, array(), $context);
@@ -683,12 +683,12 @@ class DefaultController extends AbstractController
     public function runAbortAction(Request $request, $idClient, $idJob)
     {
         $t = $this->translator;
-        $manager = $this->getDoctrine()->getManager();
-        
-        $job = $this->getDoctrine()
+        $manager = $this->doctrine->getManager();
+
+        $job = $this->doctrine
             ->getRepository('App:Job')
             ->find($idJob);
-        $queue = $this->getDoctrine()
+        $queue = $this->doctrine
             ->getRepository('App:Queue')
             ->findOneBy(array('job' => $job));
         if (null == $job) {
@@ -701,26 +701,26 @@ class DefaultController extends AbstractController
                     'The requested job does not exists, it has probably ended.',
                     array(),
                     'BinovoElkarBackup'
-                    ),
+                ),
                 'action' => 'callbackJobAborting',
                 'data' => array($idJob)
             ));
         } else {
             $queue->setAborted(true);
             $queue->setPriority(0);
-            
+
             $response = new JsonResponse(array(
                 'error' => false,
                 'msg' => $t->trans(
                     'Job stop requested: aborting job',
                     array(),
                     'BinovoElkarBackup'
-                    ),
+                ),
                 'action' => 'callbackJobAborting',
                 'data' => array($idJob)
             ));
         }
-        
+
 
         $manager->flush();
         return $response;
@@ -731,8 +731,8 @@ class DefaultController extends AbstractController
      */
     public function showJobConfigAction(Request $request, $idClient, $idJob)
     {
-        $t = $this->translator;        
-        $repository = $this->getDoctrine()->getRepository('App:Job');
+        $t = $this->translator;
+        $repository = $this->doctrine->getRepository('App:Job');
         $job = $repository->find($idJob);
         if (null == $job || $job->getClient()->getId() != $idClient) {
             throw $this->createNotFoundException(
@@ -740,7 +740,7 @@ class DefaultController extends AbstractController
                     'Unable to find Job entity: ',
                     array(),
                     'BinovoElkarBackup'
-                ) 
+                )
                 . $idClient . " " . $idJob
             );
         }
@@ -776,7 +776,7 @@ class DefaultController extends AbstractController
         $response->headers->set('Content-Type', 'text/plain');
         $this->logger->info(
             'Show job config %clientid%, job %jobid%',
-            array('%clientid%' => $idClient,'%jobid%' => $idJob),
+            array('%clientid%' => $idClient, '%jobid%' => $idJob),
             array('link' => $this->router->generateJobRoute($idJob, $idClient))
         );
         $preCommand = '';
@@ -787,7 +787,7 @@ class DefaultController extends AbstractController
         foreach ($job->getPostScripts() as $script) {
             $postCommand = $postCommand . "\n" . sprintf('/usr/bin/env ELKARBACKUP_LEVEL="JOB" ELKARBACKUP_EVENT="POST" ELKARBACKUP_URL="%s" ELKARBACKUP_ID="%s" ELKARBACKUP_PATH="%s" ELKARBACKUP_STATUS="%s" sudo "%s" 2>&1', $url, $idJob, $job->getSnapshotRoot(), 0, $script->getScriptPath());
         }
-        
+
         return $this->render(
             'default/rsnapshotconfig.txt.twig',
             array(
@@ -821,19 +821,19 @@ class DefaultController extends AbstractController
         $t = $this->translator;
         if ("-1" === $idJob) {
             $job = new Job();
-            $client = $this->getDoctrine()
+            $client = $this->doctrine
                 ->getRepository('App:Client')
                 ->find($idClient);
             if (null == $client) {
                 throw $this->createNotFoundException($t->trans(
-                    'Unable to find Client entity:',
-                    array(),
-                    'BinovoElkarBackup'
-                ) . $idClient);
+                        'Unable to find Client entity:',
+                        array(),
+                        'BinovoElkarBackup'
+                    ) . $idClient);
             }
             $job->setClient($client);
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:Job');
+            $repository = $this->doctrine->getRepository('App:Job');
             $job = $repository->find($idJob);
         }
         $form = $this->createForm(
@@ -847,16 +847,16 @@ class DefaultController extends AbstractController
             try {
                 $jobService->save($job);
             } catch (Exception $e) {
-                $this->get('session')->getFlashBag()->add('job', $t->trans(
+                $request->getSession()->getFlashBag()->add('job', $t->trans(
                     'Unable to save your changes: %extrainfo%',
                     array('%extrainfo%' => $e->getMessage()),
                     'BinovoElkarBackup'
                 ));
             }
-            
+
             return $this->redirect($this->generateUrl('showClients'));
         } else {
-            
+
             return $this->render(
                 'default/job.html.twig',
                 array('form' => $form->createView())
@@ -864,7 +864,7 @@ class DefaultController extends AbstractController
         }
     }
 
-        /**
+    /**
      * @Route("/client/{idClient}/job/{idJob}/backup/{action}/{idBackupLocation}/{path}", requirements={"idClient" = "\d+", "idJob" = "\d+", "path" = ".*", "action" = "view|download|downloadzip", "idBackupLocation" = "\d+"}, defaults={"path" = "/", "idBackupLocation" = 0}, name="showJobBackup", methods={"GET"})
      */
     public function showJobBackupAction(Request $request, $idClient, $idJob, $action, $idBackupLocation, $path)
@@ -873,26 +873,26 @@ class DefaultController extends AbstractController
             return $this->redirect($this->generateUrl('showClients'));
         }
         $t = $this->translator;
-        $repository = $this->getDoctrine()->getRepository('App:Job');
+        $repository = $this->doctrine->getRepository('App:Job');
         $job = $repository->find($idJob);
         if ($job->getClient()->getId() != $idClient) {
             throw $this->createNotFoundException($t->trans(
-                'Unable to find Job entity: ',
-                array(),
-                'BinovoElkarBackup'
-            ) . $idClient . " " . $idJob);
+                    'Unable to find Job entity: ',
+                    array(),
+                    'BinovoElkarBackup'
+                ) . $idClient . " " . $idJob);
         }
         if (0 != $idBackupLocation) {
-            $backupLocation = $this->getDoctrine()
-            ->getRepository('App:BackupLocation')
-            ->find($idBackupLocation);
+            $backupLocation = $this->doctrine
+                ->getRepository('App:BackupLocation')
+                ->find($idBackupLocation);
             $backupDir = sprintf(
                 '%s/%04d/%04d',
                 $backupLocation->getEffectiveDir(),
                 $job->getClient()->getId(),
                 $job->getId()
             );
-            
+
             $snapshotRoot = realpath($backupDir);
             $realPath = realpath($snapshotRoot . '/' . $path);
             $backupDirectories = array();
@@ -903,19 +903,19 @@ class DefaultController extends AbstractController
             if (file_exists($jobPath[1])) {
                 array_push($backupDirectories, $jobPath);
             }
-            
+
             if (false == $realPath) {
                 throw $this->createNotFoundException($t->trans(
-                    'Path not found:',
-                    array(),
-                    'BinovoElkarBackup'
+                        'Path not found:',
+                        array(),
+                        'BinovoElkarBackup'
                     ) . $path);
             }
             if (0 !== strpos($realPath, $snapshotRoot)) {
                 throw $this->createNotFoundException($t->trans(
-                    'Path not found:',
-                    array(),
-                    'BinovoElkarBackup'
+                        'Path not found:',
+                        array(),
+                        'BinovoElkarBackup'
                     ) . $path);
             }
             if (is_dir($realPath)) {
@@ -925,26 +925,26 @@ class DefaultController extends AbstractController
                         'Content-Disposition' => sprintf(
                             'attachment; filename="%s.tar.gz"',
                             basename($realPath)
-                            )
+                        )
                     );
                     $f = function () use ($realPath) {
                         $command = sprintf(
                             'cd "%s"; tar zc "%s"',
                             dirname($realPath),
                             basename($realPath)
-                            );
+                        );
                         passthru($command);
                     };
                     $this->logger->info(
                         'Download backup directory %clientid%, %jobid% %path%',
-                        array('%clientid%' => $idClient,'%jobid%' => $idJob,'%path%' => $path),
+                        array('%clientid%' => $idClient, '%jobid%' => $idJob, '%path%' => $path),
                         array('link' => $this->generateUrl('showJobBackup', array(
                             'action' => $action,
                             'idClient' => $idClient,
                             'idJob' => $idJob,
                             'path' => $path
                         ))));
-                    
+
                     return new StreamedResponse($f, 200, $headers);
                 } elseif ('downloadzip' == $action) {
                     $headers = array(
@@ -952,27 +952,27 @@ class DefaultController extends AbstractController
                         'Content-Disposition' => sprintf(
                             'attachment; filename="%s.zip"',
                             basename($realPath)
-                            )
+                        )
                     );
                     $f = function () use ($realPath) {
                         $command = sprintf(
                             'cd "%s"; zip -r - "%s"',
                             dirname($realPath),
                             basename($realPath)
-                            );
+                        );
                         passthru($command);
                     };
                     $this->logger->info(
                         'Download backup directory %clientid%, %jobid% %path%',
-                        array('%clientid%' => $idClient,'%jobid%' => $idJob,'%path%' => $path),
+                        array('%clientid%' => $idClient, '%jobid%' => $idJob, '%path%' => $path),
                         array('link' => $this->generateUrl('showJobBackup', array(
                             'action' => $action,
                             'idClient' => $idClient,
                             'idJob' => $idJob,
                             'path' => $path
                         )))
-                        );
-                    
+                    );
+
                     return new StreamedResponse($f, 200, $headers);
                 } else {
                     // Check if Zip is in the user path
@@ -996,7 +996,7 @@ class DefaultController extends AbstractController
                     array_push($dirContent, $content);
                     $this->logger->debug(
                         'View backup directory %clientid%, %jobid% %path%',
-                        array('%clientid%' => $idClient,'%jobid%' => $idJob, '%idBackupLocation%' => $idBackupLocation, '%path%' => $path),
+                        array('%clientid%' => $idClient, '%jobid%' => $idJob, '%idBackupLocation%' => $idBackupLocation, '%path%' => $path),
                         array('link' => $this->generateUrl('showJobBackup', array(
                             'action' => $action,
                             'idClient' => $idClient,
@@ -1004,8 +1004,8 @@ class DefaultController extends AbstractController
                             'idBackupLocation' => $idBackupLocation,
                             'path' => $path
                         )))
-                        );
-                    
+                    );
+
                     $params = array(
                         'dirContent' => $dirContent,
                         'job' => $job,
@@ -1029,14 +1029,14 @@ class DefaultController extends AbstractController
                     'idJob' => $idJob,
                     'path' => $path
                 ))));
-                
+
                 return $response;
             }
         } else {
             // Check if Zip is in the user path
             exec('which zip', $cmdretval);
             $isZipInstalled = $cmdretval;
-            
+
             $backupDirectories = $this->findBackups($job);
             $dirContent = array();
             foreach ($backupDirectories as $backupDir) {
@@ -1058,14 +1058,14 @@ class DefaultController extends AbstractController
             }
             $this->logger->debug(
                 'View backup directory %clientid%, %jobid% %path%',
-                array('%clientid%' => $idClient,'%jobid%' => $idJob),
+                array('%clientid%' => $idClient, '%jobid%' => $idJob),
                 array('link' => $this->generateUrl('showJobBackup', array(
                     'action' => $action,
                     'idClient' => $idClient,
                     'idJob' => $idJob,
                 )))
             );
-            
+
             $params = array(
                 'dirContent' => $dirContent,
                 'job' => $job,
@@ -1102,16 +1102,16 @@ class DefaultController extends AbstractController
      */
     public function editPolicyAction(Request $request, $id = 'new')
     {
-        if (! $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+        if (!$this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             // only allow to admins to do this task
             return $this->redirect($this->generateUrl('showClients'));
         }
-        
+
         $t = $this->translator;
         if ('new' === $id) {
             $policy = new Policy();
         } else {
-            $policy = $this->getDoctrine()
+            $policy = $this->doctrine
                 ->getRepository('App:Policy')
                 ->find($id);
         }
@@ -1122,10 +1122,10 @@ class DefaultController extends AbstractController
         );
         $this->logger->debug(
             'View policy %policyname%',
-            array('%policyname%' => $policy->getName()), 
+            array('%policyname%' => $policy->getName()),
             array('link' => $this->router->generatePolicyRoute($policy->getId()))
         );
-        
+
         return $this->render(
             'default/policy.html.twig',
             array('form' => $form->createView())
@@ -1137,13 +1137,13 @@ class DefaultController extends AbstractController
      */
     public function deletePolicyAction(Request $request, $id)
     {
-        if (! $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+        if (!$this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             // only allow to admins to do this task
             return $this->redirect($this->generateUrl('showClients'));
         }
-        
+
         $t = $this->translator;
-        $db = $this->getDoctrine();
+        $db = $this->doctrine;
         $repository = $db->getRepository('App:Policy');
         $manager = $db->getManager();
         $policy = $repository->find($id);
@@ -1156,13 +1156,13 @@ class DefaultController extends AbstractController
                 array('link' => $this->router->generatePolicyRoute($id))
             );
         } catch (PDOException $e) {
-            $this->get('session')->getFlashBag()->add('showPolicies', $t->trans(
+            $request->getSession()->getFlashBag()->add('showPolicies', $t->trans(
                 'Removing the policy %name% failed. Check that it is not in use.',
-                array('%name%' => $policy->getName()), 
+                array('%name%' => $policy->getName()),
                 'BinovoElkarBackup'
             ));
         }
-        
+
         return $this->redirect($this->generateUrl('showPolicies'));
     }
 
@@ -1175,7 +1175,7 @@ class DefaultController extends AbstractController
         if ("-1" === $id) {
             $policy = new Policy();
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:Policy');
+            $repository = $this->doctrine->getRepository('App:Policy');
             $policy = $repository->find($id);
         }
         $form = $this->createForm(
@@ -1185,7 +1185,7 @@ class DefaultController extends AbstractController
         );
         $form->handleRequest($request);
         if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->doctrine->getManager();
             $em->persist($policy);
             $em->flush();
             $this->logger->info(
@@ -1193,10 +1193,10 @@ class DefaultController extends AbstractController
                 array('%policyname%' => $policy->getName()),
                 array('link' => $this->router->generatePolicyRoute($id))
             );
-            
+
             return $this->redirect($this->generateUrl('showPolicies'));
         } else {
-            
+
             return $this->render(
                 'default/policy.html.twig',
                 array('form' => $form->createView())
@@ -1212,21 +1212,20 @@ class DefaultController extends AbstractController
     {
         $user = $this->security->getToken()->getUser();
         $actualuserid = $user->getId();
-        
+
         $t = $this->translator;
-        $repository = $this->getDoctrine()->getRepository('App:Job');
-        
+        $repository = $this->doctrine->getRepository('App:Job');
+
         $query = $repository->createQueryBuilder('j')
             ->innerJoin('j.client', 'c')
             ->addOrderBy('j.priority', 'ASC');
-        if (! $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+        if (!$this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             // Non-admin users only can sort their own jobs
             $query->where('j.isActive <> 0 AND c.isActive <> 0 AND c.owner = ?1'); // adding users and roles
             $query->setParameter(1, $actualuserid);
         }
-        $jobs = $query->getQuery()->getResult();
-        ;
-        
+        $jobs = $query->getQuery()->getResult();;
+
         $formBuilder = $this->createFormBuilder(array('jobs' => $jobs));
         $formBuilder->add('jobs', CollectionType::class, array('entry_type' => JobForSortType::class));
         $form = $formBuilder->getForm();
@@ -1236,14 +1235,14 @@ class DefaultController extends AbstractController
                 $jobId = $jobId['id'];
                 $job = $repository->findOneById($jobId);
                 $job->setPriority($i);
-                ++ $i;
+                ++$i;
             }
             $this->logger->info(
                 'Jobs reordered',
                 array(),
                 array('link' => $this->generateUrl('showClients'))
             );
-            $this->get('session')->getFlashBag()->add(
+            $request->getSession()->getFlashBag()->add(
                 'sortJobs',
                 $t->trans('Jobs prioritized', array(), 'BinovoElkarBackup')
             );
@@ -1254,19 +1253,19 @@ class DefaultController extends AbstractController
                 array('form' => $form->createView())
             );
         }
-        
+
         return $result;
     }
 
     public function getFsSize($path)
     {
-        $size = (int) shell_exec(sprintf("df -k '%s' | tail -n1 | awk '{ print $2 }' | head -c -2", $path));
+        $size = (int)shell_exec(sprintf("df -k '%s' | tail -n1 | awk '{ print $2 }' | head -c -2", $path));
         return $size;
     }
 
     public function getFsUsed($path)
     {
-        $size = (float) shell_exec(sprintf("df -k '%s' | tail -n1 | awk '{ print $3 }' | head -c -2", $path));
+        $size = (float)shell_exec(sprintf("df -k '%s' | tail -n1 | awk '{ print $3 }' | head -c -2", $path));
         return $size;
     }
 
@@ -1278,30 +1277,30 @@ class DefaultController extends AbstractController
     {
         $user = $this->security->getToken()->getUser();
         $actualuserid = $user->getId();
-        
-        $fsDiskUsage = (int) round(
+
+        $fsDiskUsage = (int)round(
             $this->getFsUsed('/') * 100 / $this->getFsSize('/'),
             0,
             PHP_ROUND_HALF_UP
         );
-        
-        $repository = $this->getDoctrine()->getRepository('App:Client');
+
+        $repository = $this->doctrine->getRepository('App:Client');
         $query = $repository->createQueryBuilder('c')->addOrderBy('c.id', 'ASC');
-        
-        if (! $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+
+        if (!$this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             // Limited view for non-admin users
             $query->where('c.owner = ?1'); // adding users and roles
             $query->setParameter(1, $actualuserid);
         }
         $query->getQuery();
-        
+
         $paginator = $this->paginator;
         $pagination = $paginator->paginate(
             $query,
             $request->query->get('page', 1)/*page number*/,
             $request->get('lines', $this->getUserPreference($request, 'linesperpage'))
         );
-        
+
         foreach ($pagination as $i => $client) {
             $client->setLogEntry($this->getLastLogForLink('%/client/' . $client->getId()));
             foreach ($client->getJobs() as $job) {
@@ -1315,39 +1314,39 @@ class DefaultController extends AbstractController
             array(),
             array('link' => $this->generateUrl('showClients'))
         );
-        
+
         return $this->render(
             'default/clients.html.twig',
-            array('pagination' => $pagination,'fsDiskUsage' => $fsDiskUsage)
+            array('pagination' => $pagination, 'fsDiskUsage' => $fsDiskUsage)
         );
     }
-    
+
     /**
      * @Route("/status", name="showStatus")
      * @Template()
      */
     public function showStatusAction(Request $request)
     {
-        $repository = $this->getDoctrine()->getRepository('App:Queue');
+        $repository = $this->doctrine->getRepository('App:Queue');
         $query = $repository
             ->createQueryBuilder('c')
             ->orderBy('c.date ASC, c.priority')
             ->getQuery();
-        $clients = $this->getDoctrine()->getRepository('App:Client')->findAll();
-            
+        $clients = $this->doctrine->getRepository('App:Client')->findAll();
+
         $paginator = $this->paginator;
         $pagination = $paginator->paginate(
             $query,
             $request->query->get('page', 1)/*page number*/,
             $request->get('lines', $this->getUserPreference($request, 'linesperpage'))
-            );
-        
+        );
+
         $this->logger->debug(
             'View backup status',
             array(),
             array('link' => $this->generateUrl('showStatus'))
-            );
-        
+        );
+
         return $this->render(
             'default/status.html.twig',
             array('pagination' => $pagination, 'clients' => $clients)
@@ -1360,9 +1359,9 @@ class DefaultController extends AbstractController
      */
     public function showScriptsAction(Request $request)
     {
-        $repository = $this->getDoctrine()->getRepository('App:Script');
+        $repository = $this->doctrine->getRepository('App:Script');
         $query = $repository->createQueryBuilder('c')->getQuery();
-        
+
         $paginator = $this->paginator;
         $pagination = $paginator->paginate(
             $query,
@@ -1374,7 +1373,7 @@ class DefaultController extends AbstractController
             array(),
             array('link' => $this->generateUrl('showScripts'))
         );
-        
+
         return $this->render(
             'default/scripts.html.twig',
             array('pagination' => $pagination)
@@ -1384,7 +1383,7 @@ class DefaultController extends AbstractController
     public function getLastLogForLink($link)
     {
         $lastLog = null;
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         // :WARNING: this call might end up slowing things too much.
         $dql = <<<EOF
 SELECT l
@@ -1400,7 +1399,7 @@ EOF;
         if (count($logs) > 0) {
             $lastLog = $logs[0];
         }
-        
+
         return $lastLog;
     }
 
@@ -1412,18 +1411,18 @@ EOF;
     {
         $formValues = array();
         $t = $this->translator;
-        $repository = $this->getDoctrine()->getRepository('App:LogRecord');
+        $repository = $this->doctrine->getRepository('App:LogRecord');
         $queryBuilder = $repository->createQueryBuilder('l')->addOrderBy('l.id', 'DESC');
         $queryParamCounter = 1;
-        
+
         $filter = $request->get('filter');
-        if (! $filter ){
+        if (!$filter) {
             // Default log level = 200 (Notices and up)
-            $filter['gte']['l.level'] = Job::NOTIFICATION_LEVEL_INFO;
+            $filter['gte']['l.level'] = 200;
         }
         $queryBuilder->where("1 = 1");
         foreach ($filter as $op => $filterValues) {
-            if (! in_array($op, array('gte','eq','like'))) {
+            if (!in_array($op, array('gte', 'eq', 'like'))) {
                 $op = 'eq';
             }
             foreach ($filterValues as $columnName => $value) {
@@ -1437,14 +1436,14 @@ EOF;
                     } else {
                         $queryBuilder->setParameter($queryParamCounter, $value);
                     }
-                    ++ $queryParamCounter;
+                    ++$queryParamCounter;
                     $formValues["filter[$op][$columnName]"] = $value;
                 }
             }
         }
-        
+
         $query = $queryBuilder->getQuery();
-        
+
         $paginator = $this->paginator;
         $pagination = $paginator->paginate(
             $query,
@@ -1456,7 +1455,7 @@ EOF;
             array(),
             array('link' => $this->generateUrl('showLogs'))
         );
-        
+
         return $this->render(
             'default/logs.html.twig',
             array(
@@ -1468,28 +1467,28 @@ EOF;
                             array(),
                             'BinovoElkarBackup'
                         ),
-                        Job::NOTIFICATION_LEVEL_INFO => $t->trans(
+                        100 => $t->trans(
                             'Notices and up',
                             array(),
                             'BinovoElkarBackup'
                         ),
-                        Job::NOTIFICATION_LEVEL_WARNING => $t->trans(
+                        300 => $t->trans(
                             'Warnings and up',
                             array(),
                             'BinovoElkarBackup'
                         ),
-                        Job::NOTIFICATION_LEVEL_ERROR => $t->trans(
+                        200 => $t->trans(
                             'Errors and up',
                             array(),
                             'BinovoElkarBackup'
                         ),
-                        Job::NOTIFICATION_LEVEL_NONE => $t->trans(
+                        1000 => $t->trans(
                             'None',
                             array(),
                             'BinovoElkarBackup'
                         )
                     ),
-                    'value' => isset($formValues['filter[gte][l.level]']) ? $formValues['filter[gte][l.level]'] : null,'name' => 'filter[gte][l.level]'
+                    'value' => isset($formValues['filter[gte][l.level]']) ? $formValues['filter[gte][l.level]'] : null, 'name' => 'filter[gte][l.level]'
                 ),
                 'object' => array(
                     'value' => isset($formValues['filter[like][l.link]']) ? $formValues['filter[like][l.link]'] : null,
@@ -1505,7 +1504,7 @@ EOF;
                         'TickCommand' => 'TickCommand',
                         'UpdateAuthorizedKeysCommand' => 'UpdateAuthorizedKeysCommand'
                     ),
-                    'value' => isset($formValues['filter[eq][l.source]']) ? $formValues['filter[eq][l.source]'] : null,'name' => 'filter[eq][l.source]'
+                    'value' => isset($formValues['filter[eq][l.source]']) ? $formValues['filter[eq][l.source]'] : null, 'name' => 'filter[eq][l.source]'
                 )
             )
         );
@@ -1517,9 +1516,9 @@ EOF;
      */
     public function showPoliciesAction(Request $request)
     {
-        $repository = $this->getDoctrine()->getRepository('App:Policy');
+        $repository = $this->doctrine->getRepository('App:Policy');
         $query = $repository->createQueryBuilder('c')->getQuery();
-        
+
         $paginator = $this->paginator;
         $pagination = $paginator->paginate(
             $query,
@@ -1531,7 +1530,7 @@ EOF;
             array(),
             array('link' => $this->generateUrl('showPolicies'))
         );
-        
+
         return $this->render(
             'default/policies.html.twig',
             array('pagination' => $pagination)
@@ -1546,42 +1545,42 @@ EOF;
         $result = $request->request->all();
         $backupLocationId = $result['form']['backup_script'];
         $backupLocation = $this
-            ->getDoctrine()
+            ->doctrine
             ->getRepository('App:BackupLocation')
             ->find($backupLocationId);
         $response = $this->render(
             'default/copyrepository.sh.twig',
             array(
-                'backupsroot'   => $backupLocation->getEffectiveDir(),
-                'backupsuser'   => 'elkarbackup',
-                'mysqldb'       => $this->getParameter('database_name'),
-                'mysqlhost'     => $this->getParameter('database_host'),
+                'backupsroot' => $backupLocation->getEffectiveDir(),
+                'backupsuser' => 'elkarbackup',
+                'mysqldb' => $this->getParameter('database_name'),
+                'mysqlhost' => $this->getParameter('database_host'),
                 'mysqlpassword' => $this->getParameter('database_password'),
-                'mysqluser'     => $this->getParameter('database_user'),
-                'server'        => $request->getHttpHost(),
-                'uploads'       => $this->getParameter('upload_dir')
+                'mysqluser' => $this->getParameter('database_user'),
+                'server' => $request->getHttpHost(),
+                'uploads' => $this->getParameter('upload_dir')
             )
         );
         $response->headers->set('Content-Type', 'text/plain');
         $response->headers->set('Content-Disposition', 'attachment; filename="copyrepository.sh"');
-        
+
         return $response;
     }
 
     public function readKeyFileAsCommentAndRest($filename)
     {
         $keys = array();
-        if (! file_exists($filename)) {
+        if (!file_exists($filename)) {
             return $keys;
         }
         foreach (explode("\n", file_get_contents($filename)) as $keyLine) {
             $matches = array();
             // the format of eacn non empty non comment line is "options keytype base64-encoded key comment" where key is one of ecdsa-sha2-nistp256, ecdsa-sha2-nistp384, ecdsa-sha2-nistp521, ssh-dss, ssh-rsa
             if (preg_match('/(.*(?:ecdsa-sha2-nistp256|ecdsa-sha2-nistp384|ecdsa-sha2-nistp521|ssh-dss|ssh-rsa) *[^ ]*) *(.*)/', $keyLine, $matches)) {
-                $keys[] = array('publicKey' => $matches[1],'comment' => $matches[2]);
+                $keys[] = array('publicKey' => $matches[1], 'comment' => $matches[2]);
             }
         }
-        
+
         return $keys;
     }
 
@@ -1598,7 +1597,7 @@ EOF;
                 'required' => true,
                 'attr' => array('class' => 'form-control'),
                 'label' => $t->trans('Backup Script', array(), 'BinovoElkarBackup'),
-                'class'    => 'App:BackupLocation',
+                'class' => 'App:BackupLocation',
                 'choice_label' => 'name'
             )
         );
@@ -1612,10 +1611,10 @@ EOF;
             );
         }
         $backupScriptForm = $backupScriptFormBuilder->getForm();
-        
+
         $authorizedKeysFile = dirname(
-            $this->getParameter('public_key')
-        ) . '/authorized_keys';
+                $this->getParameter('public_key')
+            ) . '/authorized_keys';
         $keys = $this->readKeyFileAsCommentAndRest($authorizedKeysFile);
         $authorizedKeysFormBuilder = $this->createFormBuilder(array('publicKeys' => $keys));
         $authorizedKeysFormBuilder->add(
@@ -1626,7 +1625,7 @@ EOF;
                 'allow_add' => true,
                 'allow_delete' => true,
                 'attr' => array('class' => 'form-control'),
-                'entry_options' => array('required' => false,'attr' => array('class' => 'span10'), 'translator' => $t)
+                'entry_options' => array('required' => false, 'attr' => array('class' => 'span10'), 'translator' => $t)
             )
         );
         $authorizedKeysForm = $authorizedKeysFormBuilder->getForm();
@@ -1637,7 +1636,7 @@ EOF;
             foreach ($data['publicKeys'] as $key) {
                 $serializedKeys .= sprintf("%s %s\n", $key['publicKey'], $key['comment']);
             }
-            $manager = $this->getDoctrine()->getManager();
+            $manager = $this->doctrine->getManager();
             $msg = new Message(
                 'DefaultController',
                 'TickCommand',
@@ -1652,7 +1651,7 @@ EOF;
                 'Updating key file %keys%',
                 array('%keys%' => $serializedKeys)
             );
-            $this->get('session')->getFlashBag()->add(
+            $request->getSession()->getFlashBag()->add(
                 'backupScriptConfig',
                 $t->trans(
                     'Key file updated. The update should be effective in less than 2 minutes.',
@@ -1667,7 +1666,7 @@ EOF;
                 array('authorizedKeysForm' => $authorizedKeysForm->createView(), 'backupScriptForm' => $backupScriptForm->createView())
             );
         }
-        
+
         return $result;
     }
 
@@ -1677,35 +1676,35 @@ EOF;
      */
     public function editBackupLocationAction(Request $request, $id = 'new')
     {
-        if (! $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+        if (!$this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             // only allow to admins to do this task
             return $this->redirect($this->generateUrl('showClients'));
         }
-        
+
         $t = $this->translator;
         if ('new' === $id) {
             $backupLocation = new BackupLocation();
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:BackupLocation');
+            $repository = $this->doctrine->getRepository('App:BackupLocation');
             $backupLocation = $repository->find($id);
         }
-        
-        
+
+
         $form = $this->createForm(
             BackupLocationType::class,
             $backupLocation,
-            array( 'fs' => $this->isAutoFsAvailable(), 'translator' => $t)
+            array('fs' => $this->isAutoFsAvailable(), 'translator' => $t)
         );
-        
+
         $this->logger->debug(
             'View location %backupLocationName%.',
             array('%backupLocationName%' => $backupLocation->getName()),
             array('link' => $this->router->generateBackupLocationRoute($id))
         );
-        
+
         return $this->render(
             'default/backuplocation.html.twig',
-            array('form' => $form->createView(),'id' => $id)
+            array('form' => $form->createView(), 'id' => $id)
         );
     }
 
@@ -1718,20 +1717,20 @@ EOF;
         if ('new' === $id) {
             $backupLocation = new BackupLocation();
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:BackupLocation');
+            $repository = $this->doctrine->getRepository('App:BackupLocation');
             $backupLocation = $repository->find($id);
         }
-        
-        
+
+
         $form = $this->createForm(
             BackupLocationType::class,
             $backupLocation,
-            array( 'fs' => $this->isAutoFsAvailable(), 'translator' => $t)
+            array('fs' => $this->isAutoFsAvailable(), 'translator' => $t)
         );
         $form->handleRequest($request);
         $result = null;
         $location = $backupLocation->getEffectiveDir();
-        if (! is_dir($location)) {
+        if (!is_dir($location)) {
             $form->addError(new FormError($t->trans(
                 'Warning: the directory does not exist',
                 array(),
@@ -1739,7 +1738,7 @@ EOF;
             )));
             $result = $this->render(
                 'default/backuplocation.html.twig',
-                array('form' => $form->createView(),'id' => $id)
+                array('form' => $form->createView(), 'id' => $id)
             );
         } elseif ($backupLocation->getMaxParallelJobs() < 1) {
             $form->addError(new FormError($t->trans(
@@ -1749,11 +1748,11 @@ EOF;
             )));
             $result = $this->render(
                 'default/backuplocation.html.twig',
-                array('form' => $form->createView(),'id' => $id)
+                array('form' => $form->createView(), 'id' => $id)
             );
-            
+
         } elseif ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->doctrine->getManager();
             $em->persist($backupLocation);
             $em->flush();
             $this->logger->info(
@@ -1765,10 +1764,10 @@ EOF;
         } else {
             $result = $this->render(
                 'default/backuplocation.html.twig',
-                array('form' => $form->createView(),'id' => $id)
+                array('form' => $form->createView(), 'id' => $id)
             );
         }
-        
+
         $this->clearCache();
         return $result;
     }
@@ -1778,13 +1777,13 @@ EOF;
      */
     public function deleteBackupLocationAction(Request $request, $id)
     {
-        if (! $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+        if (!$this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             // only allow to admins to do this task
             return $this->redirect($this->generateUrl('showClients'));
         }
-        
+
         $t = $this->translator;
-        $db = $this->getDoctrine();
+        $db = $this->doctrine;
         $repository = $db->getRepository('App:BackupLocation');
         $manager = $db->getManager();
         $backupLocation = $repository->find($id);
@@ -1797,7 +1796,7 @@ EOF;
                 array('link' => $this->router->generateBackupLocationRoute($id))
             );
         } catch (Exception $e) {
-            $this->get('session')->getFlashBag()->add(
+            $request->getSession()->getFlashBag()->add(
                 'manageBackupLocations',
                 $t->trans(
                     'Removing %name% failed. Check that it is not in use.',
@@ -1806,7 +1805,7 @@ EOF;
                 )
             );
         }
-        
+
         return $this->redirect($this->generateUrl('manageBackupLocations'));
     }
 
@@ -1816,9 +1815,9 @@ EOF;
      */
     public function manageBackupLocationsAction(Request $request)
     {
-        $repository = $this->getDoctrine()->getRepository('App:BackupLocation');
+        $repository = $this->doctrine->getRepository('App:BackupLocation');
         $query = $repository->createQueryBuilder('c')->getQuery();
-        
+
         $paginator = $this->paginator;
         $pagination = $paginator->paginate(
             $query,
@@ -1830,7 +1829,7 @@ EOF;
             array(),
             array('link' => $this->generateUrl('manageBackupLocations'))
         );
-        
+
         return $this->render(
             'default/backuplocations.html.twig',
             array('pagination' => $pagination)
@@ -1965,7 +1964,7 @@ EOF;
                 'required' => false,
                 'label' => $t->trans('Do post script on pre script failure', array(), 'BinovoElkarBackup')
             ),
-            
+
         );
         $defaultData = array();
         foreach ($params as $paramName => $formField) {
@@ -1990,7 +1989,7 @@ EOF;
             foreach ($data as $paramName => $paramValue) {
                 $ok = true;
                 if (PasswordType::class == $params[$paramName]['entry_type']) {
-                    if (! empty($paramValue)) {
+                    if (!empty($paramValue)) {
                         $ok = $this->setParameter(
                             $paramName,
                             $paramValue,
@@ -1999,7 +1998,7 @@ EOF;
                     }
                 } elseif (CheckboxType::class == $params[$paramName]['entry_type']) {
                     // Workaround to store value in boolean format
-                    if (! empty($paramValue)) {
+                    if (!empty($paramValue)) {
                         $ok = $this->setParameter(
                             $paramName,
                             'true',
@@ -2033,8 +2032,8 @@ EOF;
                         }
                     }
                 }
-                if (! $ok) {
-                    $this->get('session')->getFlashBag()->add(
+                if (!$ok) {
+                    $request->getSession()->getFlashBag()->add(
                         'manageParameters',
                         $t->trans(
                             'Error saving parameter "%param%"',
@@ -2046,7 +2045,7 @@ EOF;
                 }
             }
             if ($allOk) {
-                $this->get('session')->getFlashBag()->add(
+                $request->getSession()->getFlashBag()->add(
                     'manageParameters',
                     $t->trans('Parameters updated', array(), 'BinovoElkarBackup')
                 );
@@ -2064,7 +2063,7 @@ EOF;
                 )
             );
         }
-        $this->getDoctrine()->getManager()->flush();
+        $this->doctrine->getManager()->flush();
         return $result;
     }
 
@@ -2093,7 +2092,7 @@ EOF;
                 array('link' => $this->generateUrl($from))
             );
         }
-        
+
         return $ok;
     }
 
@@ -2114,26 +2113,26 @@ EOF;
                 'label' => $t->trans('Old password', array(), 'BinovoElkarBackup')
             )
         )
-        ->add(
-            'newPassword',
-            PasswordType::class,
-            array(
-                'required' => true,
-                'attr' => array('class' => 'form-control'),
-                'label' => $t->trans('New password', array(), 'BinovoElkarBackup')
+            ->add(
+                'newPassword',
+                PasswordType::class,
+                array(
+                    'required' => true,
+                    'attr' => array('class' => 'form-control'),
+                    'label' => $t->trans('New password', array(), 'BinovoElkarBackup')
+                )
             )
-        )
-        ->add(
-            'newPassword2',
-            PasswordType::class,
-            array(
-                'required' => true,
-                'attr' => array('class' => 'form-control'),
-                'label' => $t->trans('Confirm new password', array(), 'BinovoElkarBackup')
+            ->add(
+                'newPassword2',
+                PasswordType::class,
+                array(
+                    'required' => true,
+                    'attr' => array('class' => 'form-control'),
+                    'label' => $t->trans('Confirm new password', array(), 'BinovoElkarBackup')
+                )
             )
-        )
-        ->getForm();
-        
+            ->getForm();
+
         if ($request->isMethod('POST')) {
             $form->handleRequest($request);
             $data = $form->getData();
@@ -2142,7 +2141,7 @@ EOF;
             $ok = true;
             if (empty($data['newPassword']) || $data['newPassword'] !== $data['newPassword2']) {
                 $ok = false;
-                $this->get('session')->getFlashBag()->add(
+                $request->getSession()->getFlashBag()->add(
                     'changePassword',
                     $t->trans("Passwords do not match", array(), 'BinovoElkarBackup')
                 );
@@ -2154,7 +2153,7 @@ EOF;
             }
             if ($encoder->encodePassword($data['oldPassword'], $user->getSalt()) !== $user->getPassword()) {
                 $ok = false;
-                $this->get('session')->getFlashBag()->add(
+                $request->getSession()->getFlashBag()->add(
                     'changePassword',
                     $t->trans("Wrong old password", array(), 'BinovoElkarBackup')
                 );
@@ -2169,10 +2168,10 @@ EOF;
                     $data['newPassword'],
                     $user->getSalt()
                 ));
-                $manager = $this->getDoctrine()->getManager();
+                $manager = $this->doctrine->getManager();
                 $manager->persist($user);
                 $manager->flush();
-                $this->get('session')->getFlashBag()->add(
+                $request->getSession()->getFlashBag()->add(
                     'changePassword',
                     $t->trans("Password changed", array(), 'BinovoElkarBackup')
                 );
@@ -2182,10 +2181,10 @@ EOF;
                     array('link' => $this->router->generateUserRoute($user->getId()))
                 );
             }
-            
+
             return $this->redirect($this->generateUrl('changePassword'));
         } else {
-            
+
             return $this->render(
                 'default/password.html.twig',
                 array('form' => $form->createView())
@@ -2199,7 +2198,7 @@ EOF;
     public function downloadLogAction(Request $request, $id)
     {
         $t = $this->translator;
-        $db = $this->getDoctrine();
+        $db = $this->doctrine;
         $repository = $db->getRepository('App:LogRecord');
         $manager = $db->getManager();
         $log = $repository->findOneById($id);
@@ -2210,7 +2209,7 @@ EOF;
                 'BinovoElkarBackup'
             ));
         }
-        
+
         $response = new Response();
         if (is_file($log->getLogfilePath())) {
             // Logfile exists
@@ -2219,7 +2218,7 @@ EOF;
                 array('%logfile%' => $log->getLogfile()),
                 array('link' => $this->generateUrl('downloadLog', array('id' => $id)))
             );
-            
+
             $response->setContent(file_get_contents($log->getLogfilePath()));
             $response->headers->set('Content-Type', 'application/octet-stream');
             $response->headers->set(
@@ -2236,7 +2235,7 @@ EOF;
                 array('%logfile%' => $log->getLogfile()),
                 array('link' => $this->generateUrl('downloadLog', array('id' => $id)))
             );
-            
+
             $response->setContent(file_get_contents($log->getLogfilePath() . ".gz"));
             $response->headers->set('Content-Type', 'application/octet-stream');
             $response->headers->set(
@@ -2255,7 +2254,7 @@ EOF;
             );
             $response = $this->redirect($this->generateUrl('showLogs'));
         }
-        
+
         return $response;
     }
 
@@ -2264,13 +2263,13 @@ EOF;
      */
     public function deleteScriptAction(Request $request, $id)
     {
-        if (! $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+        if (!$this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             // only allow to admins to do this task
             return $this->redirect($this->generateUrl('showClients'));
         }
-        
+
         $t = $this->translator;
-        $db = $this->getDoctrine();
+        $db = $this->doctrine;
         $repository = $db->getRepository('App:Script');
         $manager = $db->getManager();
         $script = $repository->find($id);
@@ -2283,7 +2282,7 @@ EOF;
                 array('link' => $this->router->generateScriptRoute($id))
             );
         } catch (PDOException $e) {
-            $this->get('session')->getFlashBag()->add(
+            $request->getSession()->getFlashBag()->add(
                 'showScripts',
                 $t->trans(
                     'Removing the script %name% failed. Check that it is not in use.',
@@ -2292,7 +2291,7 @@ EOF;
                 )
             );
         }
-        
+
         return $this->redirect($this->generateUrl('showScripts'));
     }
 
@@ -2302,7 +2301,7 @@ EOF;
     public function downloadScriptAction(Request $request, $id)
     {
         $t = $this->translator;
-        $db = $this->getDoctrine();
+        $db = $this->doctrine;
         $repository = $db->getRepository('App:Script');
         $manager = $db->getManager();
         $script = $repository->findOneById($id);
@@ -2328,7 +2327,7 @@ EOF;
                 $script->getName()
             )
         );
-        
+
         return $response;
     }
 
@@ -2337,23 +2336,23 @@ EOF;
      */
     public function editScriptAction(Request $request, $id)
     {
-        if (! $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+        if (!$this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             // only allow to admins to do this task
             return $this->redirect($this->generateUrl('showClients'));
         }
-        
+
         $t = $this->translator;
         if ('new' === $id) {
             $script = new Script($this->uploadDir);
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:Script');
+            $repository = $this->doctrine->getRepository('App:Script');
             $script = $repository->find($id);
         }
         $form = $this->createForm(
             ScriptType::class,
             $script,
             array(
-                'scriptFileRequired' => ! $script->getScriptFileExists(),
+                'scriptFileRequired' => !$script->getScriptFileExists(),
                 'translator' => $t
             )
         );
@@ -2362,7 +2361,7 @@ EOF;
             array('%scriptname%' => $script->getName()),
             array('link' => $this->router->generateScriptRoute($id))
         );
-        
+
         return $this->render(
             'default/script.html.twig',
             array('form' => $form->createView())
@@ -2378,14 +2377,14 @@ EOF;
         if ("-1" === $id) {
             $script = new Script($this->uploadDir);
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:Script');
+            $repository = $this->doctrine->getRepository('App:Script');
             $script = $repository->find($id);
         }
         $form = $this->createForm(
             ScriptType::class,
             $script,
             array(
-                'scriptFileRequired' => ! $script->getScriptFileExists(),
+                'scriptFileRequired' => !$script->getScriptFileExists(),
                 'translator' => $t
             )
         );
@@ -2393,7 +2392,7 @@ EOF;
         $result = null;
         if ($form->isValid()) {
             if ("-1" == $id && null == $script->getScriptFile()) { // it is a new script but no file was uploaded
-                $this->get('session')->getFlashBag()->add(
+                $request->getSession()->getFlashBag()->add(
                     'editScript',
                     $t->trans(
                         'Uploading a script is mandatory for script creation.',
@@ -2402,7 +2401,7 @@ EOF;
                     )
                 );
             } else {
-                $em = $this->getDoctrine()->getManager();
+                $em = $this->doctrine->getManager();
                 $script->setLastUpdated(new DateTime()); // we to this to force the PostPersist script to run.
                 $em->persist($script);
                 $em->flush();
@@ -2414,13 +2413,13 @@ EOF;
                 $result = $this->redirect($this->generateUrl('showScripts'));
             }
         }
-        if (! $result) {
+        if (!$result) {
             $result = $this->render(
                 'default/script.html.twig',
                 array('form' => $form->createView())
             );
         }
-        
+
         return $result;
     }
 
@@ -2430,7 +2429,7 @@ EOF;
     public function deleteUserAction(Request $request, $id)
     {
         if (User::SUPERUSER_ID != $id) {
-            $db = $this->getDoctrine();
+            $db = $this->doctrine;
             $repository = $db->getRepository('App:User');
             $manager = $db->getManager();
             $user = $repository->find($id);
@@ -2442,7 +2441,7 @@ EOF;
                 array('link' => $this->router->generateUserRoute($id))
             );
         }
-        
+
         return $this->redirect($this->generateUrl('showUsers'));
     }
 
@@ -2455,7 +2454,7 @@ EOF;
         if ('new' === $id) {
             $user = new User();
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:User');
+            $repository = $this->doctrine->getRepository('App:User');
             $user = $repository->find($id);
         }
         $form = $this->createForm(UserType::class, $user, array('translator' => $t));
@@ -2464,7 +2463,7 @@ EOF;
             array('%username%' => $user->getUsername()),
             array('link' => $this->router->generateUserRoute($id))
         );
-        
+
         return $this->render(
             'default/user.html.twig',
             array('form' => $form->createView())
@@ -2480,7 +2479,7 @@ EOF;
         if ("-1" === $id) {
             $user = new User();
         } else {
-            $repository = $this->getDoctrine()->getRepository('App:User');
+            $repository = $this->doctrine->getRepository('App:User');
             $user = $repository->find($id);
         }
         $form = $this->createForm(UserType::class, $user, array('translator' => $t));
@@ -2492,7 +2491,7 @@ EOF;
                 $password = $encoder->encodePassword($user->newPassword, $user->getSalt());
                 $user->setPassword($password);
             }
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->doctrine->getManager();
             $em->persist($user);
             $em->flush();
             $this->logger->info(
@@ -2500,10 +2499,10 @@ EOF;
                 array('%username%' => $user->getUsername()),
                 array('link' => $this->router->generateUserRoute($id))
             );
-            
+
             return $this->redirect($this->generateUrl('showUsers'));
         } else {
-            
+
             return $this->render(
                 'default/user.html.twig',
                 array('form' => $form->createView())
@@ -2516,9 +2515,9 @@ EOF;
      */
     public function setLanguage(Request $request, $locale)
     {
-        $this->get('session')->set('_locale', $locale);
+        $request->getSession()->set('_locale', $locale);
         $referer = $request->headers->get('referer');
-        
+
         return $this->redirect($referer);
     }
 
@@ -2528,9 +2527,9 @@ EOF;
      */
     public function showUsersAction(Request $request)
     {
-        $repository = $this->getDoctrine()->getRepository('App:User');
+        $repository = $this->doctrine->getRepository('App:User');
         $query = $repository->createQueryBuilder('c')->getQuery();
-        
+
         $paginator = $this->paginator;
         $pagination = $paginator->paginate(
             $query,
@@ -2542,7 +2541,7 @@ EOF;
             array(),
             array('link' => $this->generateUrl('showUsers'))
         );
-        
+
         return $this->render(
             'default/users.html.twig',
             array('pagination' => $pagination)
@@ -2551,10 +2550,10 @@ EOF;
 
     protected function checkPermissions($idClient, $idJob = null)
     {
-        $repository = $this->getDoctrine()->getRepository('App:Client');
+        $repository = $this->doctrine->getRepository('App:Client');
         $client = $repository->find($idClient);
-        
-        if ($client->getOwner() == $this->security->getToken()->getUser() || 
+
+        if ($client->getOwner() == $this->security->getToken()->getUser() ||
             $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
             return True;
         } else {
@@ -2571,60 +2570,60 @@ EOF;
         $idoriginal = $idClient;
         if (null == $idClient) {
             throw $this->createNotFoundException($t->trans(
-                'Unable to find Client entity:',
-                array(),
-                'BinovoElkarBackup'
-            ) . $idClient);
-        }
-        
-        $clientrow = array();
-        try {
-            // CLONE CLIENT
-            $repository = $this->getDoctrine()->getRepository('App:Client');
-            $client = $repository->find($idoriginal);
-            if (null == $client) {
-                throw $this->createNotFoundException($t->trans(
                     'Unable to find Client entity:',
                     array(),
                     'BinovoElkarBackup'
-                ) . $client);
+                ) . $idClient);
+        }
+
+        $clientrow = array();
+        try {
+            // CLONE CLIENT
+            $repository = $this->doctrine->getRepository('App:Client');
+            $client = $repository->find($idoriginal);
+            if (null == $client) {
+                throw $this->createNotFoundException($t->trans(
+                        'Unable to find Client entity:',
+                        array(),
+                        'BinovoElkarBackup'
+                    ) . $client);
             }
-            
+
             $newname = $client->getName() . "-cloned1";
             while ($repository->findOneByName($newname)) {
-                $newname ++;
+                $newname++;
             }
-            
+
             $new = clone $client;
             $new->setName($newname);
-            $newem = $this->getDoctrine()->getManager();
+            $newem = $this->doctrine->getManager();
             $newem->persist($new);
             $newem->flush();
             $newem->detach($new);
-            
+
             $idnew = $new->getId();
-            
+
             // CLONE JOBS
-            
-            $repository = $this->getDoctrine()->getRepository('App:Job');
+
+            $repository = $this->doctrine->getRepository('App:Job');
             $jobs = $repository->findBy(array('client' => $idoriginal
             ));
-            
+
             foreach ($jobs as $job) {
-                $repository = $this->getDoctrine()->getRepository('App:Client');
+                $repository = $this->doctrine->getRepository('App:Client');
                 $client = $repository->find($idnew);
-                
+
                 $newjob = clone $job;
                 $newjob->setClient($client);
                 $newjob->setDiskUsage(0);
                 $newjob->setLastResult('');
-                $newem = $this->getDoctrine()->getManager();
+                $newem = $this->doctrine->getManager();
                 $newem->persist($newjob);
                 $newem->flush();
                 $newem->detach($newjob);
             }
         } catch (Exception $e) {
-            $this->get('session')->getFlashBag()->add(
+            $request->getSession()->getFlashBag()->add(
                 'clone',
                 $t->trans(
                     'Unable to clone your client: %extrainfo%',
@@ -2633,10 +2632,10 @@ EOF;
                 )
             );
         }
-        
+
         // $response = new Response($t->trans('Client cloned successfully', array(), 'BinovoElkarBackup'));
         // $response->headers->set('Content-Type', 'text/plain');
-        
+
         // Custom normalizer
         // $normalizers[] = new ClientNormalizer();
         // $normalizer = new ObjectNormalizer();
@@ -2648,8 +2647,8 @@ EOF;
         $encoders[] = new JsonEncoder();
         $encoders[] = new XmlEncoder();
         $serializer = new Serializer($normalizers, $encoders);
-        
-        $repository = $this->getDoctrine()->getRepository('App:Client');
+
+        $repository = $this->doctrine->getRepository('App:Client');
         $client = $repository->find($idnew);
         // syslog(LOG_ERR, "Obtaining first job: ".$client->getJobs()[0]->getId());
         syslog(LOG_ERR, "Serializing object: " . $client->getName());
@@ -2670,7 +2669,7 @@ EOF;
     {
         $t = $this->translator;
         $randtoken = md5(uniqid(rand(), true));
-        
+
         $response = new JsonResponse(array(
             'token' => $randtoken,
             'msg' => $t->trans('New Token have been generated', array(), 'BinovoElkarBackup')
@@ -2690,13 +2689,13 @@ EOF;
         $form = $this->createForm(
             PreferencesType::class,
             $user,
-            array('translator' => $t,'validation_groups' => array('preferences'))
+            array('translator' => $t, 'validation_groups' => array('preferences'))
         );
-        
+
         if ($request->isMethod('POST')) {
             $form->handleRequest($request);
             $data = $form->getData();
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->doctrine->getManager();
             $em->persist($data);
             $em->flush();
             $this->logger->info(
@@ -2704,7 +2703,7 @@ EOF;
                 array('%username%' => $user->getUsername()),
                 array('link' => $this->router->generateUserRoute($user->getId()))
             );
-            
+
             $language = $form['language']->getData();
             $this->setLanguage($request, $language);
             return $this->redirect($this->generateUrl('managePreferences'));
@@ -2714,7 +2713,7 @@ EOF;
                 array('%username%' => $user->getUsername()),
                 array('link' => $this->router->generateUserRoute($user->getId()))
             );
-            
+
             return $this->render(
                 'default/preferences.html.twig',
                 array('form' => $form->createView())
@@ -2729,16 +2728,16 @@ EOF;
         if ($param == 'language') {
             $response = $user->getLanguage();
         } elseif ($param == 'linesperpage') {
-            $response = $user->getLinesperpage();
+            $response = $user->getLinesPerPage();
         }
         return $response;
     }
-    
-    public function findBackups($job)
+
+    public function findBackups($job): array
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $backupLocations = $em->getRepository('App:BackupLocation')
-        ->findAll();
+            ->findAll();
         $jobLocations = array();
         $actualLocation = $job->getBackupLocation()->getEffectiveDir();
         $jobPath = array(
@@ -2748,7 +2747,7 @@ EOF;
                 $actualLocation,
                 $job->getClient()->getId(),
                 $job->getId()
-                )
+            )
         );
         if (file_exists($jobPath[1]) and is_dir($jobPath[1])) {
             array_push($jobLocations, $jobPath);
@@ -2770,7 +2769,7 @@ EOF;
                 }
             }
         }
-        
+
         return $jobLocations;
     }
 }
