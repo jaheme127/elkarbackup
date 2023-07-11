@@ -1,9 +1,17 @@
 <?php
 namespace App\Api\DataPersisters;
 
+use App\Entity\Client;
+use App\Exception\APIException;
+use App\Exception\PermissionException;
+use App\Service\ClientService;
+use Doctrine\ORM\Cache\Persister;
+use Exception;
+use InvalidArgumentException;
+
 class ClientDataPersister implements ContextAwareDataPersisterInterface
 {
-    private $clientService;
+    private ClientService $clientService;
     
     public function __construct(ClientService $clientService)
     {
@@ -20,8 +28,12 @@ class ClientDataPersister implements ContextAwareDataPersisterInterface
         }
         
     }
-    
-    public function remove($data, array $context = [])
+
+    /**
+     * @throws PermissionException
+     * @throws APIException
+     */
+    public function remove($data, array $context = []): void
     {
         try{
             $this->clientService->delete($data->getId());

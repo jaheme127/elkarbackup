@@ -1,35 +1,40 @@
 <?php
+
 namespace App\Api\DataProviders;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
-use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use App\Entity\Job;
+use App\Entity\User;
 use App\Exception\NotFoundException;
 use App\Exception\PermissionException;
 use App\Service\LoggerService;
 use App\Service\RouterService;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Security;
-use \Exception;
 
 class JobItemDataProvider implements ItemDataProviderInterface, RestrictedDataProviderInterface
 {
-    private $authChecker;
-    private $entityManager;
-    private $logger;
-    private $router;
-    private $security;
+    private AuthorizationCheckerInterface $authChecker;
+    private EntityManagerInterface $entityManager;
+    private LoggerService $logger;
+    private RouterService $router;
+    private Security $security;
 
     public function __construct(EntityManagerInterface $em, AuthorizationCheckerInterface $authChecker, LoggerService $logger, RouterService $router, Security $security)
     {
-        $this->authChecker   = $authChecker;
+        $this->authChecker = $authChecker;
         $this->entityManager = $em;
-        $this->logger        = $logger;
-        $this->router        = $router;
-        $this->security      = $security;
+        $this->logger = $logger;
+        $this->router = $router;
+        $this->security = $security;
     }
 
+    /**
+     * @throws NotFoundException
+     * @throws NonUniqueResultException
+     * @throws PermissionException
+     */
     public function getItem(string $resourceClass, $id, string $operationName = null, array $context = []): ?Job
     {
         $repository = $this->entityManager->getRepository('App:Job');
@@ -40,7 +45,9 @@ class JobItemDataProvider implements ItemDataProviderInterface, RestrictedDataPr
         }
         if (!$this->authChecker->isGranted('ROLE_ADMIN')) {
             $query->join('j.client', 'c');
-            $query->andWhere($query->expr()->eq('c.owner', $this->security->getToken()->getUser()->getId()));
+            $user = $this->security->getToken()->getUser();
+            $u = $this->entityManager->getRepository(User::class)->findOneBy(["username" => $user->getUserIdentifier()]);
+            $query->andWhere($query->expr()->eq('c.owner', $u->getId()));
             if (null == $query->getQuery()->getOneOrNullResult()) {
                 throw new PermissionException(sprintf("Permission denied to get job %s", $id));
             }
@@ -50,7 +57,7 @@ class JobItemDataProvider implements ItemDataProviderInterface, RestrictedDataPr
             'View job %clientid%',
             array('%clientid%' => $id),
             array('link' => $this->router->generateJobRoute($id, $idClient))
-            );
+        );
         $this->entityManager->flush();
         return $query->getQuery()->getOneOrNullResult();
     }

@@ -1,17 +1,18 @@
 <?php
+
 namespace App\Api\DataPersisters;
 
-use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
-use ApiPlatform\Core\Exception\InvalidArgumentException;
+
 use App\Entity\Job;
 use App\Exception\APIException;
 use App\Exception\PermissionException;
 use App\Service\JobService;
-use \Exception;
+use Exception;
+use InvalidArgumentException;
 
 class JobDataPersister implements ContextAwareDataPersisterInterface
 {
-    private $jobService;
+    private JobService $jobService;
 
     public function __construct(JobService $clientService)
     {
@@ -26,19 +27,23 @@ class JobDataPersister implements ContextAwareDataPersisterInterface
         } catch (Exception $e) {
             throw new InvalidArgumentException($e->getMessage());
         }
-        
+
     }
 
+    /**
+     * @throws PermissionException
+     * @throws APIException
+     */
     public function remove($data, array $context = [])
     {
-        try{
+        try {
             $this->jobService->delete($data->getId());
         } catch (PermissionException $e) {
             throw new PermissionException($e->getMessage());
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             throw new APIException($e->getMessage());
         }
-        
+
     }
 
     public function supports($data, array $context = []): bool

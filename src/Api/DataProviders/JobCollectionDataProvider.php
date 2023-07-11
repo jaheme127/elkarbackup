@@ -1,20 +1,19 @@
 <?php
 namespace App\Api\DataProviders;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGenerator;
-use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
-use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGenerator;
 use App\Entity\Job;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Security;
 
 class JobCollectionDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
 {
-    private $authChecker;
-    private $collectionExtensions;
-    private $entityManager;
-    private $security;
+    private AuthorizationCheckerInterface $authChecker;
+    private iterable $collectionExtensions;
+    private EntityManagerInterface $entityManager;
+    private Security $security;
     /**
      * Constructor
      */
@@ -31,8 +30,10 @@ class JobCollectionDataProvider implements ContextAwareCollectionDataProviderInt
         $repository = $this->entityManager->getRepository('App:Job');
         $query = $repository->createQueryBuilder('j')->addOrderBy('j.id', 'ASC');
         if (!$this->authChecker->isGranted('ROLE_ADMIN')) {
+            $user = $this->security->getToken()->getUser();
+            $u = $this->entityManager->getRepository(User::class)->findOneBy(["username" => $user->getUserIdentifier()]);
             $query->join('j.client', 'c');
-            $query->where($query->expr()->eq('c.owner', $this->security->getToken()->getUser()->getId()));
+            $query->where($query->expr()->eq('c.owner', $u->getId()));
         }
         $queryNameGenerator = new QueryNameGenerator();
         foreach ($this->collectionExtensions as $extension) {

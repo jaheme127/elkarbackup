@@ -2,9 +2,9 @@
 
 namespace App\Api\DataProviders;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\QueryNameGenerator;
-use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
-use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
+
+use ApiPlatform\Doctrine\Orm\Extension\QueryResultCollectionExtensionInterface;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGenerator;
 use App\Entity\BackupLocation;
 use App\Service\LoggerService;
 use App\Service\RouterService;
@@ -12,10 +12,10 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class BackupLocationCollectionDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
 {
-    private $collectionExtensions;
-    private $entityManager;
-    private $logger;
-    private $router;
+    private iterable $collectionExtensions;
+    private EntityManagerInterface $entityManager;
+    private LoggerService $logger;
+    private RouterService $router;
 
     /**
      * Constructor
