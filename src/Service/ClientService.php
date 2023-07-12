@@ -1,21 +1,22 @@
 <?php
+
 namespace App\Service;
+
 
 use App\Entity\Message;
 use App\Exception\PermissionException;
-use App\Service\LoggerService;
-use Exception;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Security;
+use Exception;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class ClientService
 {
-    private $authChecker;
-    private $em;
-    private $logger;
-    private $router;
-    private $security;
+    private AuthorizationCheckerInterface $authChecker;
+    private EntityManagerInterface $em;
+    private LoggerService $logger;
+    private RouterService $router;
+    private Security $security;
 
     public function __construct(EntityManagerInterface $em, AuthorizationCheckerInterface $authChecker, LoggerService $logger, Security $security, RouterService $router)
     {
@@ -26,20 +27,23 @@ class ClientService
         $this->security = $security;
     }
 
-    private function assertPermission($idClient)
+    private function assertPermission($idClient): void
     {
         $repository = $this->em->getRepository('App:Client');
         $client = $repository->find($idClient);
-        
+
         if ($client->getOwner() == $this->security->getToken()->getUser() ||
-            $this->authChecker->isGranted('ROLE_ADMIN'))
-        {
+            $this->authChecker->isGranted('ROLE_ADMIN')) {
             return;
         }
         throw new PermissionException("Unable to delete client: Permission denied.");
     }
 
-    public function delete($id)
+    /**
+     * @throws PermissionException
+     * @throws Exception
+     */
+    public function delete($id): void
     {
         $this->assertPermission($id);
         $repository = $this->em->getRepository('App:Client');
@@ -60,7 +64,7 @@ class ClientService
         $this->em->remove($client);
         $msg = new Message('DefaultController', 'TickCommand', json_encode(array(
             'command' => "elkarbackup:delete_job_backups",
-            'client' => (int) $id
+            'client' => (int)$id
         )));
         $this->em->persist($msg);
         $this->em->flush();
@@ -71,7 +75,10 @@ class ClientService
         ));
     }
 
-    public function save($client)
+    /**
+     * @throws Exception
+     */
+    public function save($client): void
     {
         if (isset($jobsToDelete)) {
             foreach ($jobsToDelete as $idJob => $job) {
@@ -79,7 +86,7 @@ class ClientService
                 $this->em->remove($job);
                 $msg = new Message('DefaultController', 'TickCommand', json_encode(array(
                     'command' => "elkarbackup:delete_job_backups",
-                    'client' => (int) $client->getId(),
+                    'client' => (int)$client->getId(),
                     'job' => $idJob
                 )));
                 $this->em->persist($msg);
@@ -95,8 +102,8 @@ class ClientService
         $repository = $this->em->getRepository('App:Client');
         $existingClient = $repository->findOneBy(['name' => $clientName]);
         if (null != $existingClient) {
-            if ($existingClient->getId() !== $client->getId()){
-                throw new Exception("Client name ".$clientName." already exists");
+            if ($existingClient->getId() !== $client->getId()) {
+                throw new Exception("Client name " . $clientName . " already exists");
             }
         }
         if ($client->getOwner() == null) {

@@ -18,7 +18,7 @@ CFG_NSCA_HOST=monitor
 CFG_NAGIOS_HOST_NAME=elkarbackup
 # ---END OF CONFIGURATION
 
-if [ $ELKARBACKUP_STATUS -eq 0 ]
+if [ "$ELKARBACKUP_STATUS" -eq 0 ]
 then
     status=0
 else

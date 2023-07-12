@@ -6,6 +6,6 @@
 #    controller: App\Controller\DefaultController::loginAction
 #    methods: GET|POST
 login_check:
-    path:   /login_check
+    path: /login_check
 logout:
     path: /logout

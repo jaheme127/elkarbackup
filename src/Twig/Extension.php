@@ -6,19 +6,22 @@
 
 namespace App\Twig;
 
-class Extension extends \Twig_Extension
+use Symfony\Bundle\TwigBundle\DependencyInjection\TwigExtension;
+use Twig\TwigFunction;
+
+class Extension extends TwigExtension
 {
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return array(
 
-            new \Twig\TwigFunction('filterSelect', array($this, 'filterSelect', array('is_safe' => array('html')))),
-            new \Twig\TwigFunction('filterText', array($this, 'filterText',   array('is_safe' => array('html')))),
+            new TwigFunction('filterSelect', array($this, 'filterSelect', array('is_safe' => array('html')))),
+            new TwigFunction('filterText', array($this, 'filterText', array('is_safe' => array('html')))),
 
         );
     }
 
-    public function filterSelect($params, $extraParams = array())
+    public function filterSelect($params, $extraParams = array()): string
     {
         $options = $params['options'];
         unset($params['options']);
@@ -46,7 +49,7 @@ class Extension extends \Twig_Extension
         return $select;
     }
 
-    public function filterText($params, $extraParams = array())
+    public function filterText($params, $extraParams = array()): string
     {
         $defaultParams = array(
             'onchange' => 'this.form.submit();');
@@ -59,7 +62,7 @@ class Extension extends \Twig_Extension
         return $input;
     }
 
-    public function getName()
+    public function getName(): string
     {
         return 'BnvTwigExtension';
     }

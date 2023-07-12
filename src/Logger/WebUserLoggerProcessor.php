@@ -6,10 +6,14 @@
 
 namespace App\Logger;
 
-use App\Entity\LogRecord;
+
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Processor\WebProcessor;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Monolog\LogRecord;
 
 /**
  * Injects url/method and remote IP of the current web request in all records
@@ -20,13 +24,15 @@ class WebUserLoggerProcessor extends WebProcessor implements ContainerAwareInter
 {
     private Security $security;
     private $container;
+    private EntityManagerInterface $em;
 
     /**
      * @param Security $security
      */
-    public function __construct(Security $security)
+    public function __construct(EntityManagerInterface $em, Security $security)
     {
         parent::__construct($security);
+        $this->em = $em;
         $this->security = $security;
     }
 
@@ -36,34 +42,35 @@ class WebUserLoggerProcessor extends WebProcessor implements ContainerAwareInter
         $record['extra'] = array_merge(
             $record['extra'],
             array(
-                'user'       => null,
+                'user' => null,
                 'user_email' => '',
-                'user_id'    => '',
-                'user_name'  => '',
-                )
-            );
+                'user_id' => '',
+                'user_name' => '',
+            )
+        );
         $user = null;
         $token = $this->security->getToken();
         $user = $token?->getUser();
+        $u = $this->em->getRepository(User::class)->findOneBy(["username" => $user->getUserIdentifier()]);
 
         if ($user) {
-            if (!is_string($user) && $user != "anon."){
+            if (!is_string($user) && $user != "anon.") {
                 $record['extra'] = array_merge(
                     $record['extra'],
                     array(
-                        'user'       => $user,
-                        'user_email' => $user->getEmail(),
-                        'user_id'    => $user->getId(),
-                        'user_name'  => $user->getUsername(),
-                        )
-                    );
+                        'user' => $u,
+                        'user_email' => $u->getEmail(),
+                        'user_id' => $u->getId(),
+                        'user_name' => $u->getUsername(),
+                    )
+                );
             }
         }
 
         return $record;
     }
 
-    public function setContainer(ContainerInterface $container = null)
+    public function setContainer(ContainerInterface $container = null): void
     {
         $this->container = $container;
     }
