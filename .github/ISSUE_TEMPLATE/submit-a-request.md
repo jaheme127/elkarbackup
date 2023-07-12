@@ -17,4 +17,4 @@ How will it benefit Elkarbackup and its users?
 
 ### Additional context
 
-Add any other context like screenshots or mockups are helpful, if applicable.
+Add any other context. Screenshots or mockups are helpful, if applicable.

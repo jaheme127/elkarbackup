@@ -6,10 +6,11 @@
 
 namespace App\Logger;
 
+use App\Entity\LogRecord;
 use Monolog\Processor\WebProcessor;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Security\Core\Security;
+
 /**
  * Injects url/method and remote IP of the current web request in all records
  *
@@ -17,18 +18,19 @@ use Symfony\Component\Security\Core\Security;
  */
 class WebUserLoggerProcessor extends WebProcessor implements ContainerAwareInterface
 {
-    private $security;
+    private Security $security;
     private $container;
+
     /**
-     * @param  array $record
-     * @return array
+     * @param Security $security
      */
     public function __construct(Security $security)
     {
+        parent::__construct($security);
         $this->security = $security;
     }
 
-    public function __invoke(array $record)
+    public function __invoke($record): LogRecord
     {
         $record = parent::__invoke($record);
         $record['extra'] = array_merge(
@@ -42,9 +44,7 @@ class WebUserLoggerProcessor extends WebProcessor implements ContainerAwareInter
             );
         $user = null;
         $token = $this->security->getToken();
-        if ($token) {
-            $user = $token->getUser();
-        }
+        $user = $token?->getUser();
 
         if ($user) {
             if (!is_string($user) && $user != "anon."){

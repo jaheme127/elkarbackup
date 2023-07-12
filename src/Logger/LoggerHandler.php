@@ -6,7 +6,6 @@
 
 namespace App\Logger;
 
-use App\Entity\Job;
 use App\Entity\LogRecord;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\AbstractProcessingHandler;
@@ -21,12 +20,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class LoggerHandler extends AbstractProcessingHandler implements ContainerAwareInterface
 {
-    private $container;
-    private $em;
-    private $messages;
-    private $isRecordingMessage;
+    private ContainerInterface $container;
+    private EntityManagerInterface $em;
+    private array $messages;
+    private bool $isRecordingMessages;
 
-    public function __construct($level = Logger::DEBUG, $bubble = true, EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, int $level = Logger::DEBUG, bool $bubble = true)
     {
         parent::__construct($level, $bubble);
         $this->em = $em;
@@ -37,18 +36,18 @@ class LoggerHandler extends AbstractProcessingHandler implements ContainerAwareI
     /**
      * {@inheritdoc}
      */
-    protected function write(array $record)
+    protected function write($record): void
     {
         $logRecord = new LogRecord($record['channel'],
-                                   $record['datetime'],
-                                   $record['level'],
-                                   $record['level_name'],
-                                   $record['message'],
-                                   isset($record['context']['link'])    ? $record['context']['link']    : null,
-                                   isset($record['context']['source'])  ? $record['context']['source']  : null,
-                                   !empty($record['extra']['user_id'])   ? $record['extra']['user_id']   : null,
-                                   isset($record['extra']['user_name']) ? $record['extra']['user_name'] : null,
-                                   isset($record['context']['logfile']) ? $record['context']['logfile'] : null);
+            $record['datetime'],
+            $record['level'],
+            $record['level_name'],
+            $record['message'],
+            $record['context']['link'] ?? null,
+            $record['context']['source'] ?? null,
+            !empty($record['extra']['user_id']) ? $record['extra']['user_id'] : null,
+            $record['extra']['user_name'] ?? null,
+            $record['context']['logfile'] ?? null);
         $this->em->persist($logRecord);
         if ($this->isRecordingMessages) {
             $this->messages[] = $logRecord;
@@ -56,12 +55,12 @@ class LoggerHandler extends AbstractProcessingHandler implements ContainerAwareI
         $this->em->flush();
     }
 
-    public function setContainer(ContainerInterface $container = null)
+    public function setContainer(ContainerInterface $container = null): void
     {
         $this->container = $container;
     }
 
-    public function getMessages(string $link = null)
+    public function getMessages(string $link = null): array
     {
         if (!is_null($link)) {
             $messages = [];
@@ -76,17 +75,17 @@ class LoggerHandler extends AbstractProcessingHandler implements ContainerAwareI
         }
     }
 
-    public function clearMessages()
+    public function clearMessages(): void
     {
         $this->messages = array();
     }
 
-    public function startRecordingMessages()
+    public function startRecordingMessages(): void
     {
         $this->isRecordingMessages = true;
     }
 
-    public function stopRecordingMessages()
+    public function stopRecordingMessages(): void
     {
         $this->isRecordingMessages = false;
     }

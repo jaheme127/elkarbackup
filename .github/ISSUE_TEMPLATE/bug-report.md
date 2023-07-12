@@ -17,9 +17,9 @@ A clear and concise description of what the bug is. Include the following inform
 
 ### Steps to reproduce the behavior
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ### Expected vs actual behavior
 
