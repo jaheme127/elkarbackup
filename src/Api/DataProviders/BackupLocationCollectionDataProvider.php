@@ -10,7 +10,7 @@ use App\Service\LoggerService;
 use App\Service\RouterService;
 use Doctrine\ORM\EntityManagerInterface;
 
-class BackupLocationCollectionDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
+class BackupLocationCollectionDataProvider
 {
     private iterable $collectionExtensions;
     private EntityManagerInterface $entityManager;

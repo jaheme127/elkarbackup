@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
 class MigrationFactoryDecorator implements MigrationFactory
 {
-    private $migrationFactory;
+    private MigrationFactory $migrationFactory;
     private $uploadDir;
     private $backupDir;
     private $container;

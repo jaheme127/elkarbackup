@@ -5,15 +5,11 @@
  */
 
 namespace App\Entity;
-
-use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ApiResource(
- *     output = UserOutput::class,
- *     collectionOperations= {"get"},
- *     itemOperations= {"get"}
- * )
+ *
  * @ORM\Entity
  */
 class User

@@ -6,70 +6,26 @@
 
 namespace App\Controller;
 
-use \DateTime;
-use \Exception;
-use \PDOException;
-use \RuntimeException;
-use App\Entity\Client;
-use App\Entity\BackupLocation;
-use App\Entity\Job;
 use App\Entity\Message;
-use App\Entity\Policy;
-use App\Entity\Queue;
-use App\Entity\Script;
-use App\Entity\User;
 use App\Exception\PermissionException;
-use App\Form\Type\AuthorizedKeyType;
-use App\Form\Type\BackupLocationType;
-use App\Form\Type\ClientType;
-use App\Form\Type\JobForSortType;
-use App\Form\Type\JobType;
-use App\Form\Type\PolicyType;
-use App\Form\Type\RestoreBackupType;
-use App\Form\Type\ScriptType;
-use App\Form\Type\UserType;
-use App\Form\Type\PreferencesType;
-use App\Lib\Globals;
 use App\Service\ClientService;
-use App\Service\JobService;
 use App\Service\LoggerService;
 use App\Service\RouterService;
 use App\Service\TranslatorService;
+use Doctrine\Persistence\ManagerRegistry;
+use Exception;
 use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Bridge\Doctrine\ManagerRegistry;
-use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\Form\Extension\Core\Type\PercentType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
-use Symfony\Component\HttpKernel\CacheClearer\ChainCacheClearer;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DefaultController extends AbstractController
@@ -82,7 +38,7 @@ class DefaultController extends AbstractController
     private RouterService $router;
     private PaginatorInterface $paginator;
     private PasswordHasherFactoryInterface $encoderFactory;
-    private $uploadDir;
+    private string $uploadDir;
     private ManagerRegistry $doctrine;
 
     public function __construct($uploadDir, Security $security, TranslatorInterface $t, TranslatorService $translatorService, LoggerService $logger, RouterService $router, PaginatorInterface $pag, KernelInterface $kernel, PasswordHasherFactoryInterface $encoder, ManagerRegistry $doctrine)
@@ -258,7 +214,7 @@ class DefaultController extends AbstractController
     /**
      * @Route("/login", name="login", methods={"GET"})
      */
-    public function loginAction(Request $request, RequestStack $rs)
+    public function loginAction(Request $request, RequestStack $rs): Response
     {
         $request = $rs->getCurrentRequest();
         $session = $request->getSession();

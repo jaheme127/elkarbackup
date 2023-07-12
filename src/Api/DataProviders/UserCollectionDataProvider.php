@@ -10,7 +10,7 @@ use App\Service\LoggerService;
 use App\Service\RouterService;
 use Doctrine\ORM\EntityManagerInterface;
 
-class UserCollectionDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
+class UserCollectionDataProvider
 {
     private iterable $collectionExtensions;
     private EntityManagerInterface $entityManager;

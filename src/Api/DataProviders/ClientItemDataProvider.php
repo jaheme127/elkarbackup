@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use App\Exception\NotFoundException;
 use App\Exception\PermissionException;
 
-final class ClientItemDataProvider implements ItemDataProviderInterface, RestrictedDataProviderInterface
+final class ClientItemDataProvider
 {
     private AuthorizationCheckerInterface $authChecker;
     private EntityManagerInterface $entityManager;

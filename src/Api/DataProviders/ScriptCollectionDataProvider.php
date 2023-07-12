@@ -9,7 +9,7 @@ use App\Service\LoggerService;
 use App\Service\RouterService;
 use Doctrine\ORM\EntityManagerInterface;
 
-class ScriptCollectionDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
+class ScriptCollectionDataProvider
 {
     private iterable $collectionExtensions;
     private EntityManagerInterface $entityManager;

@@ -3,7 +3,7 @@ namespace App\Migrations;
 
 trait LegacyBackupDirAwareTrait
 {
-    private $backupDir;
+    private string $backupDir;
 
     public function setLegacyBackupDir($backupDir): void
     {

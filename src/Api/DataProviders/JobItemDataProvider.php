@@ -13,7 +13,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
-class JobItemDataProvider implements ItemDataProviderInterface, RestrictedDataProviderInterface
+class JobItemDataProvider
 {
     private AuthorizationCheckerInterface $authChecker;
     private EntityManagerInterface $entityManager;

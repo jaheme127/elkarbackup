@@ -6,8 +6,8 @@
 
 namespace App\Lib;
 
-use Symfony\Bridge\Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Psr\Log\LoggerInterface;
+use UnitEnum;
 
 /**
  * This class can be used as base class for those commands which need
@@ -15,8 +15,8 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
  */
 abstract class LoggingCommand extends ContainerAwareCommand
 {
-    private $logger;
-    
+    private LoggerInterface $logger;
+
     const ERR_CODE_PRE_FAIL = -1;
     const ERR_CODE_NO_RUN = -2;
     const ERR_CODE_OK = 0;
@@ -31,31 +31,31 @@ abstract class LoggingCommand extends ContainerAwareCommand
     const ERR_CODE_CREATE_FILE = 9;
     const ERR_CODE_DATA_ARGUMENTS = 10;
     const ERR_CODE_NOT_FOUND = 11;
-    
+
     const TYPE_PRE = 'PRE';
     const TYPE_POST = 'POST';
-    
-    public function __construct(Logger $logger)
+
+    public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
         parent::__construct();
     }
-    
+
     abstract protected function getNameForLogs();
 
-    protected function generateClientRoute($id)
+    protected function generateClientRoute($id): string
     {
         return $this->getUrlPrefix() . $this->getContainer()->get('router')->generate('editClient', array('id' => $id));
     }
 
-    protected function generateJobRoute($idJob, $idClient)
+    protected function generateJobRoute($idJob, $idClient): string
     {
         return $this->getUrlPrefix() . $this->getContainer()->get('router')->generate('editJob',
-                                                                                      array('idClient' => $idClient,
-                                                                                            'idJob'    => $idJob));
+                array('idClient' => $idClient,
+                    'idJob' => $idJob));
     }
 
-    protected function getUrlPrefix()
+    protected function getUrlPrefix(): UnitEnum|float|array|bool|int|string|null
     {
         return $this->getContainer()->getParameter('url_prefix');
     }
@@ -65,12 +65,12 @@ abstract class LoggingCommand extends ContainerAwareCommand
      * permanently. Notices that any other pending work units will be
      * flushed too.
      */
-    protected function flush()
+    protected function flush(): void
     {
         $this->getContainer()->get('doctrine')->getManager()->flush();
     }
 
-    protected function err($msg, $translatorParams = array(), $context = array())
+    protected function err($msg, $translatorParams = array(), $context = array()): void
     {
         $logger = $this->logger;
         $translator = $this->getContainer()->get('translator');
@@ -78,7 +78,7 @@ abstract class LoggingCommand extends ContainerAwareCommand
         $logger->error($translator->trans($msg, $translatorParams, 'BinovoElkarBackup'), $context);
     }
 
-    protected function info($msg, $translatorParams = array(), $context = array())
+    protected function info($msg, $translatorParams = array(), $context = array()): void
     {
         $logger = $this->logger;
         $translator = $this->getContainer()->get('translator');
@@ -86,15 +86,15 @@ abstract class LoggingCommand extends ContainerAwareCommand
         $logger->info($translator->trans($msg, $translatorParams, 'BinovoElkarBackup'), $context);
     }
 
-    protected function warn($msg, $translatorParams = array(), $context = array())
+    protected function warn($msg, $translatorParams = array(), $context = array()): void
     {
         $logger = $this->logger;
         $translator = $this->getContainer()->get('translator');
         $context = array_merge(array('source' => $this->getNameForLogs()), $context);
         $logger->warning($translator->trans($msg, $translatorParams, 'BinovoElkarBackup'), $context);
     }
-    
-    protected function debug($msg, $translatorParams = array(), $context = array())
+
+    protected function debug($msg, $translatorParams = array(), $context = array()): void
     {
         $logger = $this->logger;
         $translator = $this->getContainer()->get('translator');
@@ -102,3 +102,4 @@ abstract class LoggingCommand extends ContainerAwareCommand
         $logger->debug($translator->trans($msg, $translatorParams, 'BinovoElkarBackup'), $context);
     }
 }
+

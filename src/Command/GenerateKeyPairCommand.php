@@ -12,34 +12,33 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class GenerateKeyPairCommand extends LoggingCommand
 {
-
-    protected function getNameForLogs()
+    protected function getNameForLogs(): string
     {
         return 'GenerateKeyPairCommand';
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
         $this->setName('elkarbackup:generate_keypair')
-             ->setDescription('Generates the ssh keypair for the user running the backup jobs.');
+            ->setDescription('Generates the ssh keypair for the user running the backup jobs.');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $command       = 'rm -f $HOME/.ssh/id_rsa $HOME/.ssh/id_rsa.pub && ssh-keygen -t rsa -N "" -C "Web requested key for elkarbackup." -f "$HOME/.ssh/id_rsa"';
+        $command = 'rm -f $HOME/.ssh/id_rsa $HOME/.ssh/id_rsa.pub && ssh-keygen -t rsa -N "" -C "Web requested key for elkarbackup." -f "$HOME/.ssh/id_rsa"';
         $commandOutput = array();
-        $status        = 0;
+        $status = 0;
         exec($command, $commandOutput, $status);
         if (0 != $status) {
             $this->err('Command %command% failed. Diagnostic information follows: %output%',
-                       array('%command%' => $command,
-                             '%output%'  => "\n" . implode("\n", $commandOutput)));
+                array('%command%' => $command,
+                    '%output%' => "\n" . implode("\n", $commandOutput)));
 
         } else {
             $this->info('Command %command% succeeded with output: %output%',
-                        array('%command%' => $command,
-                              '%output%'  => implode("\n", $commandOutput)));
+                array('%command%' => $command,
+                    '%output%' => implode("\n", $commandOutput)));
         }
         $this->flush();
 

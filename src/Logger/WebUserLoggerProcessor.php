@@ -31,7 +31,7 @@ class WebUserLoggerProcessor extends WebProcessor implements ContainerAwareInter
      */
     public function __construct(EntityManagerInterface $em, Security $security)
     {
-        parent::__construct($security);
+        parent::__construct();
         $this->em = $em;
         $this->security = $security;
     }
