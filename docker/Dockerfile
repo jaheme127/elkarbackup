@@ -2,7 +2,7 @@
 ## Bootstrap & Build elkarbackup
 ##
 
-FROM php:7.3-cli-alpine
+FROM php:8.1-cli-alpine
 
 RUN apk add --no-cache \
       git \
@@ -53,6 +53,8 @@ COPY $DOCKERDIR/monolog.yaml.docker /app/elkarbackup/config/packages/dev/monolog
 ## Disable "Manage parameters" menu item
 COPY $DOCKERDIR/src/Builder.php /app/elkarbackup/src/Menu/Builder.php
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 ## Composer install
 RUN set -ex; \
       cd /app/elkarbackup; \
@@ -64,7 +66,7 @@ RUN set -ex; \
 ##
 
 
-FROM php:7.3-apache-buster
+FROM php:8.1-apache-buster
 RUN apt-get update && apt-get install -y \
       default-mysql-client \
       acl \
