@@ -84,6 +84,7 @@ COPY --from=composer:2.1 /usr/bin/composer /usr/bin/composer
 
 COPY --from=0 /app /app
 
+ENV PHP_MEMORY_LIMIT=512M
 ENV DOCKERDIR=./docker/
 
 # Apache configuration
