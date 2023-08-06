@@ -6,6 +6,7 @@
     ],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "content-hash": "3a46b2204a39f62bf26fcdba56794a8b",
     "packages": [
         {
@@ -25,6 +26,9 @@
 =======
     "content-hash": "f33586ff3605aa42ab8635a6b058f0a1",
 >>>>>>> 226bcd3c (test)
+=======
+    "content-hash": "67afb093056677cd5c53c02a892f04a6",
+>>>>>>> 981c9063 (test)
     "packages": [
         {
             "name": "api-platform/core",
@@ -10818,6 +10822,7 @@
         {
             "name": "twig/twig",
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "v3.6.1",
             "source": {
                 "type": "git",
@@ -10830,16 +10835,24 @@
                 "reference": "7e7d5839d4bec168dfeef0ac66d5c5a2edbabffd",
 =======
             "version": "v2.15.5",
+=======
+            "version": "v2.14.13",
+>>>>>>> 981c9063 (test)
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "fc02a6af3eeb97c4bf5650debc76c2eda85ac22e"
+                "reference": "66856cd0459df3dc97d32077a98454dc2a0ee75a"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/twigphp/Twig/zipball/fc02a6af3eeb97c4bf5650debc76c2eda85ac22e",
                 "reference": "fc02a6af3eeb97c4bf5650debc76c2eda85ac22e",
 >>>>>>> 3a20095e (enable docker push / update composer.json)
+=======
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/66856cd0459df3dc97d32077a98454dc2a0ee75a",
+                "reference": "66856cd0459df3dc97d32077a98454dc2a0ee75a",
+>>>>>>> 981c9063 (test)
                 "shasum": ""
             },
             "require": {
@@ -10861,7 +10874,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.15-dev"
+                    "dev-master": "2.14-dev"
                 }
             },
 >>>>>>> 3a20095e (enable docker push / update composer.json)
@@ -10899,10 +10912,14 @@
             "support": {
                 "issues": "https://github.com/twigphp/Twig/issues",
 <<<<<<< HEAD
+<<<<<<< HEAD
                 "source": "https://github.com/twigphp/Twig/tree/v3.6.1"
 =======
                 "source": "https://github.com/twigphp/Twig/tree/v2.15.5"
 >>>>>>> 3a20095e (enable docker push / update composer.json)
+=======
+                "source": "https://github.com/twigphp/Twig/tree/v2.14.13"
+>>>>>>> 981c9063 (test)
             },
             "funding": [
                 {
@@ -10915,10 +10932,14 @@
                 }
             ],
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2023-06-08T12:52:13+00:00"
 =======
             "time": "2023-05-03T17:49:41+00:00"
 >>>>>>> 3a20095e (enable docker push / update composer.json)
+=======
+            "time": "2022-04-06T06:45:17+00:00"
+>>>>>>> 981c9063 (test)
         },
         {
             "name": "webmozart/assert",
