@@ -101,6 +101,10 @@ The following environment variables are also honored for configuring your ElkarB
 | SYMFONY__MAILER__USER       | null          | user         |
 | SYMFONY__MAILER__PASSWORD   | null          | password     |
 | SYMFONY__MAILER__FROM       | null          | from address |
+| SYMFONY__MAILER__AUTH__MODE | login         | login        |
+| SYMFONY__MAILER__ENCRYPTION | null          | ssl/tls      |
+| SYMFONY__MAILER__PORT       | null          | port         |
+
 
 
 ### Elkarbackup configuration
