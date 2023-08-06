@@ -2,7 +2,7 @@
 ## Bootstrap & Build elkarbackup
 ##
 
-FROM php:8.1-cli-alpine
+FROM php:7.3-cli-alpine
 
 RUN apk add --no-cache \
       git \
@@ -58,7 +58,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 ## Composer install
 RUN set -ex; \
       cd /app/elkarbackup; \
-      composer install --no-interaction
+      composer update
 
 
 ##
@@ -66,7 +66,7 @@ RUN set -ex; \
 ##
 
 
-FROM php:8.1-apache-buster
+FROM php:7.3-apache-buster
 RUN apt-get update && apt-get install -y \
       default-mysql-client \
       acl \
