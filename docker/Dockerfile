@@ -58,7 +58,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 ## Composer install
 RUN set -ex; \
       cd /app/elkarbackup; \
-      composer update
+      composer install
 
 
 ##
