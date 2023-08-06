@@ -100,14 +100,7 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/theofidry/AliceBundle",
-            "options":  {
-                "http": {
-                    "header": [
-                        "API-TOKEN: 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"
-                    ]
-                }
-            }
+			"url": "https://github.com/theofidry/AliceBundle"
 		}
 	]
 }
