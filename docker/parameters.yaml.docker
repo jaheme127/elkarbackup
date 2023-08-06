@@ -11,7 +11,7 @@ parameters:
     mailer_user: '%env(SYMFONY__MAILER__USER)%'
     mailer_password: '%env(SYMFONY__MAILER__PASSWORD)%'
     mailer_from: '%env(SYMFONY__MAILER__FROM)%'
-    mailer_auth_mode: '%env(SYMFONY__MAILER__AUTH__MODE)%'
+    mailer_authmode: '%env(SYMFONY__MAILER__AUTHMODE)%'
     mailer_port: '%env(SYMFONY__MAILER__PORT)%'
     mailer_encryption: '%env(SYMFONY__MAILER__ENCRYPTION)%'
     locale: en
