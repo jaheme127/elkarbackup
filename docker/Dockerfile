@@ -75,11 +75,11 @@ RUN apt-get update && apt-get install -y \
       git \
       zip \
       libssl-dev \
+      openssl \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-install \
       pdo_mysql \
-      pcntl \
-      openssl
+      pcntl
 
 # Download and install composer
 COPY --from=composer:2.1 /usr/bin/composer /usr/bin/composer
